@@ -1,7 +1,4 @@
-CREATE DATABASE Team2_FinalProject_DMDD;
-GO
 USE Team2_FinalProject_DMDD;
-
 
 -- Table for Admin
 DROP TABLE IF EXISTS [Admin]
@@ -58,7 +55,7 @@ CREATE TABLE [Driver] (
   [TotalEarnings] INT NOT NULL DEFAULT 0,
   [Rating] INT NOT NULL DEFAULT 0,
   CONSTRAINT [PK_DriverID] PRIMARY KEY ([DriverID]),
-  CONSTRAINT CHK_AvailabilityStatus CHECK ([AvailabilityStatus] IN ('In-Transit', 'Available', 'Out-of-Service'))
+  CONSTRAINT [CHK_AvailabilityStatus] CHECK ([AvailabilityStatus] IN ('In-Transit', 'Available', 'Out-of-Service'))
 );
 
 -- Table for Rider
@@ -127,6 +124,7 @@ CREATE TABLE [Location] (
   CONSTRAINT [PK_LocationID] PRIMARY KEY ([GeohashID])
 );
 
+-- Table for DriverLocation 
 DROP TABLE IF EXISTS [DriverLocation];
 CREATE TABLE [DriverLocation] (
   [DriverID] VARCHAR(10) NOT NULL,
@@ -138,6 +136,7 @@ CREATE TABLE [DriverLocation] (
 );
 
 
+-- Table for Ratecard 
 DROP TABLE IF EXISTS [Ratecard];
 CREATE TABLE [Ratecard] (
   [State] VARCHAR(50) NOT NULL,
@@ -147,6 +146,8 @@ CREATE TABLE [Ratecard] (
   CONSTRAINT [PK_Ratecard] PRIMARY KEY ([State])
 );
 
+
+-- Table for TripRequest
 DROP TABLE IF EXISTS [TripRequest];
 CREATE TABLE [TripRequest] (
   [TripID] INT IDENTITY(1,1) NOT NULL,
@@ -172,6 +173,7 @@ CREATE TABLE [TripRequest] (
 );
 
 
+-- Table for Invoice
 DROP TABLE IF EXISTS [Invoice];
 CREATE TABLE [Invoice] (
   [ID] INT IDENTITY(1,1) NOT NULL,
@@ -184,6 +186,7 @@ CREATE TABLE [Invoice] (
 );
 
 
+-- Table for Invoice
 DROP TABLE IF EXISTS [PaymentRequest];
 CREATE TABLE [PaymentRequest] (
   [ID] INT IDENTITY(1,1) NOT NULL,
