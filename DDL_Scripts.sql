@@ -28,7 +28,7 @@ CREATE TABLE [RegisteredUsers] (
   [Type] varchar(30) NOT NULL,
   CONSTRAINT CHK_UserType CHECK ([Type] IN ('Driver', 'Renter', 'Rider')),
   CONSTRAINT [PK_RegisteredUsers] PRIMARY KEY ([UserID]),
-  CONSTRAINT [FK_AdminID] FOREIGN KEY (AdminID) REFERENCES Admin(AdminID) 
+  CONSTRAINT [FK_AdminID] FOREIGN KEY (AdminID) REFERENCES [Admin](AdminID) 
 );
 
 -- Table for Renter
@@ -60,7 +60,6 @@ CREATE TABLE [Driver] (
   CONSTRAINT [PK_DriverID] PRIMARY KEY ([DriverID]),
   CONSTRAINT CHK_AvailabilityStatus CHECK ([AvailabilityStatus] IN ('In-Transit', 'Available', 'Out-of-Service'))
 );
-
 
 -- Table for Rider
 DROP TABLE IF EXISTS [Rider];
@@ -120,7 +119,7 @@ CREATE TABLE [Location] (
   [ID] INT IDENTITY(1,1) NOT NULL,
   [Latitude] DECIMAL(10,8) NOT NULL,
   [Longitude] DECIMAL(11,8) NOT NULL,
-  [GeohashID] AS dbo.CalculateGeohash(Latitude, Longitude, 6) PERSISTED,
+  [GeohashID] AS dbo.CalculateGeohash(Latitude, Longitude, 8) PERSISTED,
   [Region] VARCHAR(50) NOT NULL,
   [County] VARCHAR(50) NOT NULL,
   [City] VARCHAR(50) NOT NULL,
@@ -138,6 +137,16 @@ CREATE TABLE [DriverLocation] (
   CONSTRAINT [FK_DriverLocation_Location] FOREIGN KEY ([GeohashID]) REFERENCES [Location]([GeohashID])
 );
 
+
+DROP TABLE IF EXISTS [Ratecard];
+CREATE TABLE [Ratecard] (
+  [State] VARCHAR(50) NOT NULL,
+  [RatePerMile] DECIMAL(10,2) NOT NULL,
+  [StateTax] DECIMAL(10,2) NOT NULL,
+  [BaseFare] DECIMAL(10,2) NOT NULL DEFAULT 10.00,
+  CONSTRAINT [PK_Ratecard] PRIMARY KEY ([State])
+);
+
 DROP TABLE IF EXISTS [TripRequest];
 CREATE TABLE [TripRequest] (
   [TripID] INT IDENTITY(1,1) NOT NULL,
@@ -145,10 +154,10 @@ CREATE TABLE [TripRequest] (
   [RiderID] VARCHAR(10) NOT NULL,
   [PickupLatitude] DECIMAL(10,8) NOT NULL,
   [PickupLongitude] DECIMAL(11,8) NOT NULL,
-  [PickupGeohashID] AS dbo.CalculateGeohash(PickupLatitude, PickupLongitude, 6) PERSISTED,
+  [PickupGeohashID] AS dbo.CalculateGeohash(PickupLatitude, PickupLongitude, 8) PERSISTED,
   [DropoffLatitude] DECIMAL(10,8) NOT NULL,
   [DropoffLongitude] DECIMAL(11,8) NOT NULL,
-  [DropoffGeohashID] AS dbo.CalculateGeohash(DropoffLatitude, DropoffLongitude, 6) PERSISTED,
+  [DropoffGeohashID] AS dbo.CalculateGeohash(DropoffLatitude, DropoffLongitude, 8) PERSISTED,
   [RequestTime] DATETIME NOT NULL DEFAULT GETDATE(),
   [EstimatedDistance] AS dbo.CalculateDistance(PickupLatitude, PickupLongitude, DropoffLatitude, DropoffLongitude) PERSISTED,
   [State] AS dbo.GetStateFromCoordinates(PickupLatitude, PickupLongitude) PERSISTED,
@@ -161,17 +170,6 @@ CREATE TABLE [TripRequest] (
   CONSTRAINT [FK_TripRequest_DropoffLocation] FOREIGN KEY ([DropoffGeohashID]) REFERENCES [Location]([GeohashID]),
   CONSTRAINT [CHK_Status] CHECK ([Status] IN ('Pending', 'Ride-In-Process','Completed','Canceled'))
 );
-
-
-DROP TABLE IF EXISTS [Ratecard];
-CREATE TABLE [Ratecard] (
-  [State] VARCHAR(50) NOT NULL,
-  [RatePerMile] DECIMAL(10,2) NOT NULL,
-  [StateTax] DECIMAL(10,2) NOT NULL,
-  [BaseFare] DECIMAL(10,2) NOT NULL DEFAULT 10.00,
-  CONSTRAINT [PK_Ratecard] PRIMARY KEY ([State])
-);
-
 
 
 DROP TABLE IF EXISTS [Invoice];
@@ -198,7 +196,7 @@ CREATE TABLE [PaymentRequest] (
   CONSTRAINT [PK_PaymentRequest] PRIMARY KEY ([PaymentID]),
   CONSTRAINT [FK_PaymentRequest_Invoice] FOREIGN KEY ([InvoiceID]) REFERENCES [Invoice]([InvoiceID]),
   CONSTRAINT [FK_PaymentRequest_Rider] FOREIGN KEY ([RiderID]) REFERENCES [Rider]([RiderID]),
-  CONSTRAINT [CHK_PaymentRequest_Status] CHECK ([Status] IN ('Pending', 'Remaining','Completed','Canceled')),
+  CONSTRAINT [CHK_PaymentRequest_Status] CHECK ([Status] IN ('Pending','Completed','Canceled')),
   CONSTRAINT [CHK_PaymentRequest_MethodOfPayment] CHECK ([MethodOfPayment] IN ('Cash', 'Card','OnlineWallet'))
 );
 
