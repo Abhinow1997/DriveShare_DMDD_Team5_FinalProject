@@ -1,10 +1,10 @@
-USE Team2_FinalProject_DMDD_v1;
+USE Team2_FinalProject_DMDD;
 
 -- Table for Admin
 DROP TABLE IF EXISTS [Admin]
 CREATE TABLE [Admin] (
     [ID] INT IDENTITY(1,1) NOT NULL,
-    [AdminID] AS 'ADMIN' + RIGHT('00000' + CAST(ID AS CHAR(5)), 5) PERSISTED,
+    [AdminID] AS 'ADMIN' + RIGHT('00000' + CAST(ID AS VARCHAR(5)), 5) PERSISTED,
     [FirstName] varchar(40) NOT NULL,
     [LastName] varchar(40),
     [Password] varchar(40) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE [Admin] (
 DROP TABLE IF EXISTS [RegisteredUsers];
 CREATE TABLE [RegisteredUsers] (
   [ID] INT IDENTITY(1,1) NOT NULL,
-  [UserID] AS 'R_USR' + RIGHT('00000' + CAST(ID AS CHAR(5)), 5) PERSISTED,
+  [UserID] AS 'R_USR' + RIGHT('00000' + CAST(ID AS VARCHAR(5)), 5) PERSISTED,
   [AdminID] varchar(10),
   [FirstName] varchar(10) NOT NULL,
   [LastName] varchar(50),
@@ -33,7 +33,7 @@ CREATE TABLE [RegisteredUsers] (
 DROP TABLE IF EXISTS [Renter];
 CREATE TABLE [Renter] (
   [ID] INT IDENTITY(1,1) NOT NULL,
-  [RenterID] AS 'RENTR' + RIGHT('00000' + CAST(ID AS CHAR(5)), 5) PERSISTED,
+  [RenterID] AS 'RENTR' + RIGHT('00000' + CAST(ID AS VARCHAR(5)), 5) PERSISTED,
   [UserID] varchar(10) NOT NULL,
   [TotalRentedCars] INT DEFAULT 0,
   [TotalEarnings] DECIMAL(19,2) DEFAULT 0.00,
@@ -48,7 +48,7 @@ CREATE TABLE [Renter] (
 DROP TABLE IF EXISTS [Driver];
 CREATE TABLE [Driver] (
   [ID] INT IDENTITY(1,1) NOT NULL,
-  [DriverID] AS 'DRIVE' + RIGHT('00000' + CAST(ID AS CHAR(5)), 5) PERSISTED,
+  [DriverID] AS 'DRIVE' + RIGHT('00000' + CAST(ID AS VARCHAR(5)), 5) PERSISTED,
   [UserID] varchar(10) NOT NULL,
   [LicenseNo] varchar(10) NOT NULL,
   [AvailabilityStatus] varchar(15) DEFAULT 'Available',
@@ -66,7 +66,7 @@ CREATE TABLE [Driver] (
 DROP TABLE IF EXISTS [Rider];
 CREATE TABLE [Rider] (
   [ID] INT IDENTITY(1,1) NOT NULL,
-  [RiderID] AS 'RIDER' + RIGHT('00000' + CAST(ID AS CHAR(5)), 5) PERSISTED,
+  [RiderID] AS 'RIDER' + RIGHT('00000' + CAST(ID AS VARCHAR(5)), 5) PERSISTED,
   [UserID] varchar(10) NOT NULL REFERENCES RegisteredUsers(UserID),
   [TotalPreviousRides] INT DEFAULT 0,
   [AmountDue] decimal(19,2) DEFAULT 0,
@@ -78,7 +78,7 @@ CREATE TABLE [Rider] (
 DROP TABLE IF EXISTS [Car];
 CREATE TABLE [Car] (
   [ID] INT IDENTITY(1,1) NOT NULL,
-  [CarID] AS 'R_CAR' + RIGHT('00000' + CAST(ID AS CHAR(5)), 5) PERSISTED,
+  [CarID] AS 'R_CAR' + RIGHT('00000' + CAST(ID AS VARCHAR(5)), 5) PERSISTED,
   [CarType] varchar(20) NOT NULL,
   [CarStatus] varchar(15) NOT NULL,
   [CarModel] varchar(30),
@@ -155,7 +155,7 @@ CREATE TABLE [Ratecard] (
 DROP TABLE IF EXISTS [TripRequest];
 CREATE TABLE [TripRequest] (
   [TripID] INT IDENTITY(1,1) NOT NULL,
-  [TripRequestID] AS 'TRIP_' + RIGHT('00000' + CAST(TripID AS CHAR(5)), 5) PERSISTED,
+  [TripRequestID] AS 'TRIP_' + RIGHT('00000' + CAST(TripID AS VARCHAR(5)), 5) PERSISTED,
   [RiderID] VARCHAR(10) NOT NULL,
   [PickupLatitude] DECIMAL(10,8) NOT NULL,
   [PickupLongitude] DECIMAL(11,8) NOT NULL,
@@ -181,7 +181,7 @@ CREATE TABLE [TripRequest] (
 DROP TABLE IF EXISTS [Invoice];
 CREATE TABLE [Invoice] (
   [ID] INT IDENTITY(1,1) NOT NULL,
-  [InvoiceID] AS 'INVO_' + RIGHT('00000' + CAST(ID AS CHAR(5)), 5) PERSISTED,
+  [InvoiceID] AS 'INVO_' + RIGHT('00000' + CAST(ID AS VARCHAR(5)), 5) PERSISTED,
   [TripRequestID] varchar(10) NOT NULL,
   [Distance] decimal(5,2) NOT NULL,
   [Price] decimal(10,2) NOT NULL,
@@ -194,7 +194,7 @@ CREATE TABLE [Invoice] (
 DROP TABLE IF EXISTS [PaymentRequest];
 CREATE TABLE [PaymentRequest] (
   [ID] INT IDENTITY(1,1) NOT NULL,
-  [PaymentID] AS 'PAY_R' + RIGHT('00000' + CAST(ID AS CHAR(5)), 5) PERSISTED,
+  [PaymentID] AS 'PAY_R' + RIGHT('00000' + CAST(ID AS VARCHAR(5)), 5) PERSISTED,
   [InvoiceID] varchar(10) NOT NULL,
   [RiderID] varchar(10) NOT NULL,
   [MethodOfPayment] varchar(25) NOT NULL,
