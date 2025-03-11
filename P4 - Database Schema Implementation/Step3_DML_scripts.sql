@@ -1,4 +1,5 @@
 ﻿USE Team2_FinalProject_DMDD;
+GO
 
 INSERT INTO [Admin] (FirstName, LastName, Password)
 VALUES 
@@ -262,77 +263,79 @@ SELECT * FROM [Ratecard]
 
 
 INSERT INTO [TripRequest] (
-  [RiderID], 
-  [PickupLatitude], [PickupLongitude],
-  [DropoffLatitude], [DropoffLongitude],
-  [RequestTime], [Status]
-)
-VALUES
--- California trips
-('RIDER00002', 34.05220000, -118.24370000, 32.71570000, -117.16110000, '2025-03-08 09:30:00', 'Ride-In-Process'),
-('RIDER00003', 37.77490000, -122.41940000, 37.33820000, -121.88630000, '2025-03-08 11:45:00', 'Ride-In-Process'),
-('RIDER00004', 38.58160000, -121.49440000, 37.77490000, -122.41940000, '2025-03-08 14:20:00', 'Ride-In-Process'),
-('RIDER00005', 32.71570000, -117.16110000, 34.05220000, -118.24370000, '2025-03-09 08:15:00', 'Completed'),
-('RIDER00006', 37.33820000, -121.88630000, 38.58160000, -121.49440000, '2025-03-09 10:30:00', 'Completed'),
--- New York trips
-('RIDER00007', 40.71280000, -74.00600000, 40.67820000, -73.94420000, '2025-03-09 13:45:00', 'Completed'),
-('RIDER00008', 40.78310000, -73.97120000, 40.84480000, -73.86480000, '2025-03-09 16:20:00', 'Completed'),
-('RIDER00009', 40.72820000, -73.79490000, 40.71280000, -74.00600000, '2025-03-09 18:30:00', 'Completed'),
-('RIDER00010', 40.67820000, -73.94420000, 40.78310000, -73.97120000, '2025-03-10 07:45:00', 'Completed'),
-('RIDER00011', 40.84480000, -73.86480000, 40.72820000, -73.79490000, '2025-03-10 09:15:00', 'Ride-In-Process'),
--- Massachusetts trips
-('RIDER00012', 42.36010000, -71.05890000, 42.37510000, -71.10560000, '2025-03-10 10:30:00', 'Ride-In-Process'),
-('RIDER00013', 42.38760000, -71.09950000, 42.49280000, -71.07530000, '2025-03-10 11:45:00', 'Pending'),
-('RIDER00014', 42.23730000, -71.00220000, 42.36010000, -71.05890000, '2025-03-10 13:00:00', 'Completed'),
-('RIDER00015', 42.37510000, -71.10560000, 42.38760000, -71.09950000, '2025-03-10 14:15:00', 'Pending')
-SELECT * FROM [TripRequest]
-
-
--- Completed Trips Invoices
-INSERT INTO [Invoice] (TripRequestID, Distance, Price)
-VALUES
-('TRIP_00015', 179.41, 269.120),
-('TRIP_00002', 67.57, 101.360),
-('TRIP_00003', 120.76, 181.140),
-('TRIP_00004', 179.41, 269.120),
-('TRIP_00005', 142.46, 213.700),
-('TRIP_00006', 6.48, 9.720),
-('TRIP_00007', 11.28, 16.920),
-('TRIP_00008', 17.87, 26.810),
-('TRIP_00009', 11.88, 17.830),
-('TRIP_00013', 14.43, 21.640);
-SELECT * FROM [Invoice]
-
-
--- Payment Request for invoices 
-INSERT INTO [PaymentRequest] (InvoiceID, RiderID, MethodOfPayment, Amount, Status)
-VALUES
-('INVO_00011', 'RIDER00001', 'Card', 269.12, 'Completed'),
-('INVO_00002', 'RIDER00002', 'OnlineWallet', 101.36, 'Completed'),
-('INVO_00003', 'RIDER00003', 'Cash', 181.14, 'Completed'),
-('INVO_00004', 'RIDER00001', 'Card', 269.12, 'Completed'),
-('INVO_00005', 'RIDER00002', 'OnlineWallet', 213.70, 'Completed'),
-('INVO_00006', 'RIDER00003', 'Cash', 9.72, 'Completed'),
-('INVO_00007', 'RIDER00001', 'OnlineWallet', 16.92, 'Pending'),
-('INVO_00008', 'RIDER00002', 'OnlineWallet', 26.81, 'Pending'),
-('INVO_00009', 'RIDER00003', 'OnlineWallet', 17.83, 'Completed'),
-('INVO_00010', 'RIDER00001', 'Card', 21.64, 'Completed');
-SELECT * FROM [PaymentRequest]
-
--- Card transctions 
-INSERT INTO [Card] (PaymentID, CardNumber, CardHolder, ExpiryDate, CVV, Type)
-VALUES
-('PAY_R00002', '4111222233334444', 'John Doe', '2027-06-30', '234', 'Visa'),
-('PAY_R00005', '5105105105105100', 'John Doe', '2026-09-30', '456', 'Mastercard'),
-('PAY_R00011', '3782822463100055', 'John Doe', '2028-04-30', '789', 'American Express');
-SELECT * FROM [Card]
-
--- Online Wallet transctions 
-INSERT INTO [OnlineWallet] (PaymentID, WalletID, WalletProvider, AccountEmail)
-VALUES
-('PAY_R00003', 'WALLET234567', 'PayPal', 'jane.smith@email.com'),
-('PAY_R00006', 'WALLET890123', 'Venmo', 'jane.smith@email.com'),
-('PAY_R00008', 'WALLET456789', 'Google Pay', 'john.doe@email.com'),
-('PAY_R00009', 'WALLET567890', 'Apple Pay', 'jane.smith@email.com'),
-('PAY_R00010', 'WALLET678901', 'PayPal', 'robert.j@email.com');
-SELECT * FROM [OnlineWallet] 
+   [RiderID], 
+   [PickupLatitude], [PickupLongitude],
+   [DropoffLatitude], [DropoffLongitude],
+   [RequestTime], [Status]
+ )
+ VALUES
+ -- California trips
+ ('RIDER00001', 34.05220000, -118.24370000, 32.71570000, -117.16110000, '2025-03-08 09:30:00', 'Completed'),
+ ('RIDER00002', 37.77490000, -122.41940000, 37.33820000, -121.88630000, '2025-03-08 11:45:00', 'Completed'),
+ ('RIDER00003', 38.58160000, -121.49440000, 37.77490000, -122.41940000, '2025-03-08 14:20:00', 'Completed'),
+ ('RIDER00001', 32.71570000, -117.16110000, 34.05220000, -118.24370000, '2025-03-09 08:15:00', 'Completed'),
+ ('RIDER00002', 37.33820000, -121.88630000, 38.58160000, -121.49440000, '2025-03-09 10:30:00', 'Completed'),
+ 
+ -- New York trips
+ ('RIDER00003', 40.71280000, -74.00600000, 40.67820000, -73.94420000, '2025-03-09 13:45:00', 'Completed'),
+ ('RIDER00001', 40.78310000, -73.97120000, 40.84480000, -73.86480000, '2025-03-09 16:20:00', 'Completed'),
+ ('RIDER00002', 40.72820000, -73.79490000, 40.71280000, -74.00600000, '2025-03-09 18:30:00', 'Completed'),
+ ('RIDER00003', 40.67820000, -73.94420000, 40.78310000, -73.97120000, '2025-03-10 07:45:00', 'Completed'),
+ ('RIDER00001', 40.84480000, -73.86480000, 40.72820000, -73.79490000, '2025-03-10 09:15:00', 'Ride-In-Process'),
+ 
+ -- Massachusetts trips
+ ('RIDER00002', 42.36010000, -71.05890000, 42.37510000, -71.10560000, '2025-03-10 10:30:00', 'Ride-In-Process'),
+ ('RIDER00003', 42.38760000, -71.09950000, 42.49280000, -71.07530000, '2025-03-10 11:45:00', 'Pending'),
+ ('RIDER00001', 42.23730000, -71.00220000, 42.36010000, -71.05890000, '2025-03-10 13:00:00', 'Completed'),
+ ('RIDER00002', 42.37510000, -71.10560000, 42.38760000, -71.09950000, '2025-03-10 14:15:00', 'Pending'),
+ ('RIDER00003', 42.49280000, -71.07530000, 42.23730000, -71.00220000, '2025-03-10 15:30:00', 'Canceled');
+ SELECT * FROM [TripRequest]
+ 
+ 
+ 
+ INSERT INTO [Invoice] (TripRequestID, Distance, Price)
+ VALUES
+ ('TRIP_00001', 179.41, 269.120),
+ ('TRIP_00002', 67.57, 101.360),
+ ('TRIP_00003', 120.76, 181.140),
+ ('TRIP_00004', 179.41, 269.120),
+ ('TRIP_00005', 142.46, 213.700),
+ ('TRIP_00006', 6.48, 9.720),
+ ('TRIP_00007', 11.28, 16.920),
+ ('TRIP_00008', 17.87, 26.810),
+ ('TRIP_00009', 11.88, 17.830),
+ ('TRIP_00013', 14.43, 21.640);
+ SELECT * FROM [Invoice]
+ 
+ 
+ INSERT INTO [PaymentRequest] (InvoiceID, RiderID, MethodOfPayment, Amount, Status)
+ VALUES
+ ('INVO_00001', 'RIDER00001', 'Card', 269.12, 'Completed'),
+ ('INVO_00002', 'RIDER00002', 'OnlineWallet', 101.36, 'Completed'),
+ ('INVO_00003', 'RIDER00003', 'Cash', 181.14, 'Completed'),
+ ('INVO_00004', 'RIDER00001', 'Card', 269.12, 'Completed'),
+ ('INVO_00005', 'RIDER00002', 'OnlineWallet', 213.70, 'Completed'),
+ ('INVO_00006', 'RIDER00003', 'Cash', 9.72, 'Completed'),
+ ('INVO_00007', 'RIDER00001', 'OnlineWallet', 16.92, 'Pending'),
+ ('INVO_00008', 'RIDER00002', 'OnlineWallet', 26.81, 'Pending'),
+ ('INVO_00009', 'RIDER00003', 'OnlineWallet', 17.83, 'Completed'),
+ ('INVO_00010', 'RIDER00001', 'Card', 21.64, 'Completed');
+ SELECT * FROM [PaymentRequest]
+ 
+ 
+ INSERT INTO [Card] (PaymentID, CardNumber, CardHolder, ExpiryDate, CVV, Type)
+ VALUES
+ ('PAY_R00001', '4111111111111111', 'John Doe', '2027-05-31', '123', 'Visa'),
+ ('PAY_R00004', '5555555555554444', 'John Doe', '2026-08-31', '321', 'Mastercard'),
+ ('PAY_R00010', '6011111111111117', 'John Doe', '2026-12-31', '432', 'Discover');
+ SELECT * FROM [Card]
+ 
+ 
+ INSERT INTO [OnlineWallet] (PaymentID, WalletID, WalletProvider, AccountEmail)
+ VALUES
+ ('PAY_R00002', 'WALLET123456', 'PayPal', 'jane.smith@email.com'),
+ ('PAY_R00005', 'WALLET789012', 'Venmo', 'jane.smith@email.com'),
+ ('PAY_R00007', 'WALLET345678', 'Apple Pay', 'john.doe@email.com'),
+ ('PAY_R00008', 'WALLET456789', 'Google Pay', 'jane.smith@email.com'),
+ ('PAY_R00009', 'WALLET567890', 'PayPal', 'robert.j@email.com');
+ SELECT * FROM [OnlineWallet]
