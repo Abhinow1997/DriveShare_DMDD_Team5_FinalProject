@@ -1,0 +1,32 @@
+﻿DRIVE00001,John Doe,DL10000002,In-Transit,110,5400.00,3.5,dr5refdd,Financial District,New York
+DRIVE00002,Emily Brown,DL10000003,Available,130,6100.00,5.0,drt2zp2m,Boston,Massachusetts
+DRIVE00003,David Miller,DL10000004,Out-of-Service,100,5000.00,2.5,drt2zp2m,Boston,Massachusetts
+DRIVE00004,Lisa Thomas,DL10000005,Available,140,6500.00,5.0,dr72h8rf,Upper West Side,New York
+DRIVE00005,Daniel Clark,DL10000006,In-Transit,115,5200.00,3.0,dr5x8wx4,Jamaica Estates,New York
+DRIVE00006,Daniel Clark,DL23456790,Available,130,6500.00,4.5,drt3nh6v,Cambridge,Massachusetts
+DRIVE00007,Elizabeth Hall,DL34567891,In-Transit,95,4750.00,5.0,dr5x2xr1,Howard Beach,New York
+DRIVE00008,William Scott,DL34567890,Available,150,7500.00,4.0,dr5refdd,Financial District,New York
+DRIVE00009,Mark Johnson,DL45678902,Out-of-Service,105,5250.00,3.0,drt3nh6v,Cambridge,Massachusetts
+DRIVE00010,Susan Williams,DL56789013,Available,180,9000.00,5.0,drt3wxsd,Medford,Massachusetts
+DRIVE00011,Kevin Brown,DL45678901,Out-of-Service,95,4750.00,3.0,drt8231f,Quincy,Massachusetts
+DRIVE00012,Laura Jones,DL67890124,In-Transit,120,6000.00,4.0,dr5x2xr1,Howard Beach,New York
+DRIVE00013,Brian Miller,DL78901235,Available,160,8000.00,5.0,dr5refdd,Financial District,New York
+DRIVE00014,Karen Davis,DL56789012,Available,200,10000.00,5.0,drt8231f,Quincy,Massachusetts
+DRIVE00015,Edward Wilson,DL89012346,Out-of-Service,110,5500.00,3.0,drt2zp2m,Boston,Massachusetts
+DRIVE00016,Nancy Taylor,DL90123457,In-Transit,140,7000.00,4.0,drt3nh6v,Cambridge,Massachusetts
+DRIVE00017,Michael Scott,DL10000001,Available,120,5800.00,4.5,drt2zp2m,Boston,Massachusetts
+DRIVE00018,Jim Halpert,DL10000007,Available,150,7000.00,5.0,dr5qu6qm,Coney Island,New York
+DRIVE00019,Pam Beesly,DL10000008,Out-of-Service,125,6000.00,4.0,drt8231f,Quincy,Massachusetts
+DRIVE00020,Dwight Schrute,DL10000009,Available,135,6400.00,4.5,drt8231f,Quincy,Massachusetts
+DRIVE00021,Stanley Hudson,DL10000017,Available,170,8000.00,3.5,drt2zp2m,Boston,Massachusetts
+DRIVE00022,Phyllis Vance,DL10000018,In-Transit,125,6100.00,2.5,drt3nh6v,Cambridge,Massachusetts
+DRIVE00023,Oscar Martinez,DL10000019,Available,135,6400.00,5.0,drsbqjej,Worcester,Massachusetts
+DRIVE00024,Kevin Malone,DL10000020,Out-of-Service,140,6600.00,3.0,drt3nh6v,Cambridge,Massachusetts
+DRIVE00025,Angela Martin,DL10000021,Available,150,7000.00,5.0,dr5x2xr1,Howard Beach,New York
+DRIVE00026,Creed Bratton,DL10000010,In-Transit,145,6800.00,4.0,drt8231f,Quincy,Massachusetts
+DRIVE00027,Meredith Palmer,DL10000011,Available,155,7200.00,5.0,drt8231f,Quincy,Massachusetts
+DRIVE00028,Kelly Kapoor,DL10000012,Out-of-Service,110,5300.00,3.0,drsbqjej,Worcester,Massachusetts
+DRIVE00029,Ryan Howard,DL10000013,Available,160,7500.00,5.0,drt3nh6v,Cambridge,Massachusetts
+DRIVE00030,Jim Halpert,DL10000014,In-Transit,120,5600.00,4.0,drsbqjej,Worcester,Massachusetts
+DRIVE00031,Pam Beesly,DL10000015,Available,165,7800.00,5.0,dr5x2xr1,Howard Beach,New York
+DRIVE00032,Dwight Schrute,DL10000016,Out-of-Service,130,6000.00,3.5,drt3jfnk,Somerville,Massachusetts
