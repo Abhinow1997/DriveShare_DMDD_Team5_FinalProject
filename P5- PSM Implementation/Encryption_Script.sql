@@ -1,6 +1,6 @@
 --Encryption Script
 
-USE Team2_FinalProject_DMDD;
+USE Team2_FinalProject_DMDD_v2;
 GO
 
 -- STEP 1: Drop Constraints (If They Exist)
@@ -175,7 +175,7 @@ GO
 
 --Decryption Script
 
-USE Team2_FinalProject_DMDD;
+USE Team2_FinalProject_DMDD_v2;
 GO
 
 -- Open the symmetric key for decryption
