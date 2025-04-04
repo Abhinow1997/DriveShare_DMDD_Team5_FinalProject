@@ -128,7 +128,7 @@ VALUES
 ('ADMIN00005', 'Will', 'Smith', 'rdrpass14', 'will.smith@example.com', '4155550114', 'Rider'),
 ('ADMIN00004', 'Emma', 'Stone', 'rdrpass15', 'emma.stone@example.com', '4155550115', 'Rider'),
 ('ADMIN00001', 'Scarlett', 'Johansson', 'rdrpass16', 'scarlett.j@example.com', '4155550116', 'Rider');
-
+SELECT * FROM [RegisteredUsers];
 
 -- Renter Users addition 
 SELECT * FROM [RegisteredUsers] WHERE Type='Renter';
@@ -289,7 +289,7 @@ VALUES
 ('DRIVE00004', 'R_CAR00019'),
 ('DRIVE00005', 'R_CAR00016'),
 ('DRIVE00006', 'R_CAR00013'),
-('DRIVE00007', 'R_CAR00032'),
+--('DRIVE00007', 'R_CAR00032'),
 ('DRIVE00008', 'R_CAR00008'),
 ('DRIVE00009', 'R_CAR00029'),
 ('DRIVE00010', 'R_CAR00004'),
@@ -326,7 +326,7 @@ VALUES
 ('RENTR00004', 'R_CAR00019', '2025-05-11 13:00:00', '2025-05-14 16:00:00'),
 ('RENTR00005', 'R_CAR00016', '2025-04-04 11:00:00', '2025-04-07 12:00:00'),
 ('RENTR00006', 'R_CAR00013', '2025-03-15 13:00:00', '2025-03-19 14:00:00'),
-('RENTR00007', 'R_CAR00032', '2025-05-03 10:00:00', '2025-05-09 15:00:00'),
+--('RENTR00007', 'R_CAR00032', '2025-05-03 10:00:00', '2025-05-09 15:00:00'),
 ('RENTR00008', 'R_CAR00008', '2025-03-25 12:00:00', '2025-03-31 15:00:00'),
 ('RENTR00009', 'R_CAR00029', '2025-03-01 11:00:00', '2025-03-07 16:00:00'),
 ('RENTR00010', 'R_CAR00004', '2025-03-20 14:00:00', '2025-03-25 15:00:00'),
@@ -460,15 +460,8 @@ SELECT * FROM [Ratecard];
 SELECT * FROM Rider
 
 
-SELECT * FROM Location
-
-INSERT INTO [TripRequest] (
-   [RiderID], 
-   [PickupLatitude], [PickupLongitude],
-   [DropoffLatitude], [DropoffLongitude],
-   [RequestTime], [Status]
- )
- VALUES
+INSERT INTO [TripRequest] ( [RiderID],[PickupLatitude], [PickupLongitude],[DropoffLatitude], [DropoffLongitude],[RequestTime], [Status]) 
+VALUES
  ('RIDER00001', 40.5749, -73.9840, 40.7075, -74.0113, '2025-03-31 08:00:00', 'Completed'),
  ('RIDER00002', 40.6501, -73.9496, 40.6782, -73.9442, '2025-03-31 08:15:00', 'Ride-In-Process'),
  ('RIDER00003', 40.6788, -73.9419, 40.7306, -73.9866, '2025-03-31 08:30:00', 'Completed'),
@@ -486,71 +479,54 @@ INSERT INTO [TripRequest] (
  ('RIDER00015', 42.4584, -71.1402, 42.4928, -71.0753, '2025-03-31 11:30:00', 'Completed'),
  ('RIDER00016', 42.2373, -71.0022, 42.4668, -70.9495, '2025-03-31 11:45:00', 'Pending'),
  ('RIDER00017', 42.5195, -70.8967, 42.6334, -70.7829, '2025-03-31 12:00:00', 'Completed');
+SELECT * FROM [TripRequest]
 
- SELECT * FROM [TripRequest]
+SELECT * FROM [TripRequest] WHERE Status='Completed'
 
 INSERT INTO [Invoice] (TripRequestID, Distance, Price)
 VALUES
-('TRIP_00004', 145.80, 218.50),
-('TRIP_00005', 180.20, 270.30),
+('TRIP_00001', 145.80, 218.50),
+('TRIP_00003', 180.20, 270.30),
 ('TRIP_00006', 220.10, 330.15),
 ('TRIP_00007', 190.50, 285.75),
-('TRIP_00008', 210.00, 315.00),
-('TRIP_00009', 230.25, 345.50),
-('TRIP_00010', 175.90, 263.85),
-('TRIP_00011', 250.75, 376.10),
-('TRIP_00012', 210.30, 315.45),
-('TRIP_00013', 235.60, 353.40),
-('TRIP_00014', 160.80, 241.20),
-('TRIP_00015', 195.10, 292.65),
-('TRIP_00016', 180.40, 270.60),
-('TRIP_00017', 179.41, 269.12),
-('TRIP_00018', 250.00, 350.00),
-('TRIP_00019', 200.50, 300.75),
-('TRIP_00020', 200.50, 300.75);
+('TRIP_00009', 210.00, 315.00),
+('TRIP_00011', 230.25, 345.50),
+('TRIP_00012', 175.90, 263.85),
+('TRIP_00014', 250.75, 376.10),
+('TRIP_00015', 210.30, 315.45),
+('TRIP_00017', 235.60, 353.40);
 SELECT * FROM [Invoice];
 
 
 INSERT INTO [PaymentRequest] (InvoiceID, RiderID, MethodOfPayment, Amount, Status)
 VALUES
-('INVO_00002', 'RIDER00002', 'OnlineWallet', 218.50, 'Completed'),
-('INVO_00003', 'RIDER00003', 'OnlineWallet', 270.30, 'Completed'),
-('INVO_00004', 'RIDER00004', 'OnlineWallet', 330.15, 'Completed'),
-('INVO_00005', 'RIDER00005', 'OnlineWallet', 285.75, 'Completed'),
-('INVO_00006', 'RIDER00006', 'OnlineWallet', 315.00, 'Completed'),
-('INVO_00007', 'RIDER00007', 'OnlineWallet', 345.50, 'Completed'),
-('INVO_00008', 'RIDER00008', 'OnlineWallet', 263.85, 'Completed'),
-('INVO_00009', 'RIDER00009', 'OnlineWallet', 376.10, 'Completed'),
-('INVO_00010', 'RIDER00010', 'OnlineWallet', 315.45, 'Completed'),
-('INVO_00011', 'RIDER00011', 'OnlineWallet', 353.40, 'Completed'),
-('INVO_00012', 'RIDER00012', 'Card', 241.20, 'Completed'),
-('INVO_00013', 'RIDER00013', 'Card', 292.65, 'Completed'),
-('INVO_00014', 'RIDER00014', 'Card', 270.60, 'Completed'),
-('INVO_00015', 'RIDER00015', 'Card', 269.12, 'Completed'),
-('INVO_00016', 'RIDER00016', 'Card', 350.00, 'Completed'),
-('INVO_00017', 'RIDER00017', 'Card', 300.75, 'Completed'),
-('INVO_00018', 'RIDER00018', 'Card', 300.75, 'Completed');
+('INVO_00031', 'RIDER00002', 'OnlineWallet', 218.50, 'Completed'),
+('INVO_00032', 'RIDER00003', 'OnlineWallet', 270.30, 'Completed'),
+('INVO_00033', 'RIDER00004', 'OnlineWallet', 330.15, 'Completed'),
+('INVO_00034', 'RIDER00005', 'OnlineWallet', 285.75, 'Completed'),
+('INVO_00035', 'RIDER00006', 'Card', 315.00, 'Completed'),
+('INVO_00036', 'RIDER00007', 'Card', 345.50, 'Completed'),
+('INVO_00037', 'RIDER00008', 'Card', 263.85, 'Completed'),
+('INVO_00038', 'RIDER00009', 'Card', 376.10, 'Completed'),
+('INVO_00039', 'RIDER00010', 'Card', 315.45, 'Completed'),
+('INVO_00040', 'RIDER00011', 'Card', 353.40, 'Completed');
 SELECT * FROM [PaymentRequest];
+
 
 INSERT INTO [Card] (PaymentID, CardNumber, CardHolder, ExpiryDate, CVV, Type)
 VALUES
-('PAY_R00011', '1234567812345678', 'RIDER00012', '2027-05-31', '123', 'Visa'),
-('PAY_R00012', '2345678923456789', 'RIDER00013', '2025-11-04', '234', 'MasterCard'),
-('PAY_R00013', '3456789034567890', 'RIDER00014', '2028-05-29', '345', 'American Express'),
-('PAY_R00014', '4567890145678901', 'RIDER00015', '2029-01-09', '456', 'Visa'),
-('PAY_R00015', '5678901256789012', 'RIDER00016', '2025-05-14', '567', 'MasterCard'),
-('PAY_R00016', '6789012367890123', 'RIDER00017', '2028-08-06', '678', 'Visa'),
-('PAY_R00017', '7890123478901234', 'RIDER00018', '2027-03-31', '789', 'American Express');
+('PAY_R00005', '1234567812345678', 'RIDER00012', '2027-05-31', '123', 'Visa'),
+('PAY_R00006', '2345678923456789', 'RIDER00013', '2025-11-04', '234', 'MasterCard'),
+('PAY_R00007', '3456789034567890', 'RIDER00014', '2028-05-29', '345', 'American Express'),
+('PAY_R00008', '4567890145678901', 'RIDER00015', '2029-01-09', '456', 'Visa'),
+('PAY_R00009', '5678901256789012', 'RIDER00016', '2025-05-14', '567', 'MasterCard'),
+('PAY_R00010', '6789012367890123', 'RIDER00017', '2028-08-06', '678', 'Visa');
+SELECT * FROM [Card];
 
 INSERT INTO [OnlineWallet] (PaymentID, WalletID, WalletProvider, AccountEmail)
 VALUES
 ('PAY_R00001', 'WALLET001', 'PayPal', 'rider00002@example.com'),
 ('PAY_R00002', 'WALLET002', 'Venmo', 'rider00003@example.com'),
 ('PAY_R00003', 'WALLET003', 'ApplePay', 'rider00004@example.com'),
-('PAY_R00004', 'WALLET004', 'GooglePay', 'rider00005@example.com'),
-('PAY_R00005', 'WALLET005', 'PayPal', 'rider00006@example.com'),
-('PAY_R00006', 'WALLET006', 'Venmo', 'rider00007@example.com'),
-('PAY_R00007', 'WALLET007', 'ApplePay', 'rider00008@example.com'),
-('PAY_R00008', 'WALLET008', 'GooglePay', 'rider00009@example.com'),
-('PAY_R00009', 'WALLET009', 'PayPal', 'rider00010@example.com'),
-('PAY_R00010', 'WALLET010', 'Venmo', 'rider00011@example.com');
+('PAY_R00004', 'WALLET004', 'GooglePay', 'rider00005@example.com');
+SELECT * FROM [OnlineWallet];
