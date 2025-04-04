@@ -6,13 +6,11 @@ CREATE PROCEDURE dbo.AssignDriverToTrip
     @DriverID VARCHAR(10)
 AS
 BEGIN
-    -- Declare necessary variables
     DECLARE @TripStatus VARCHAR(20);
     DECLARE @PickupGeohash VARCHAR(12);
     DECLARE @DropoffGeohash VARCHAR(12);
     DECLARE @State VARCHAR(50);
 
-    -- Get the current trip status, pickup and dropoff geohash, and state
     SELECT 
         @TripStatus = Status, 
         @PickupGeohash = PickupGeohashID, 
@@ -21,24 +19,18 @@ BEGIN
     FROM TripRequest
     WHERE TripRequestID = @TripRequestID;
 
-    -- Ensure the trip is in 'Pending' status before assigning a driver
     IF @TripStatus = 'Pending'
     BEGIN
-        -- Update the trip status to 'Ride-In-Process'
         UPDATE TripRequest
         SET Status = 'Ride-In-Process'
         WHERE TripRequestID = @TripRequestID;
 
-        -- Assign the driver to the trip and set their availability to 'In-Transit'
         UPDATE Driver
         SET AvailabilityStatus = 'In-Transit'
         WHERE DriverID = @DriverID;
 
-        -- Insert the driver's location for tracking purposes
         INSERT INTO DriverLocation (DriverID, GeohashID)
         VALUES (@DriverID, @PickupGeohash);
-
-        -- Return a success message
         PRINT 'Driver assigned to the trip successfully.';
     END
     ELSE
@@ -46,6 +38,7 @@ BEGIN
         PRINT 'Trip is not in Pending status.';
     END
 END;
+
 GO
 
 

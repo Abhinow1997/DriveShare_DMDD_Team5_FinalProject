@@ -289,7 +289,6 @@ VALUES
 ('DRIVE00004', 'R_CAR00019'),
 ('DRIVE00005', 'R_CAR00016'),
 ('DRIVE00006', 'R_CAR00013'),
---('DRIVE00007', 'R_CAR00032'),
 ('DRIVE00008', 'R_CAR00008'),
 ('DRIVE00009', 'R_CAR00029'),
 ('DRIVE00010', 'R_CAR00004'),
@@ -326,7 +325,6 @@ VALUES
 ('RENTR00004', 'R_CAR00019', '2025-05-11 13:00:00', '2025-05-14 16:00:00'),
 ('RENTR00005', 'R_CAR00016', '2025-04-04 11:00:00', '2025-04-07 12:00:00'),
 ('RENTR00006', 'R_CAR00013', '2025-03-15 13:00:00', '2025-03-19 14:00:00'),
---('RENTR00007', 'R_CAR00032', '2025-05-03 10:00:00', '2025-05-09 15:00:00'),
 ('RENTR00008', 'R_CAR00008', '2025-03-25 12:00:00', '2025-03-31 15:00:00'),
 ('RENTR00009', 'R_CAR00029', '2025-03-01 11:00:00', '2025-03-07 16:00:00'),
 ('RENTR00010', 'R_CAR00004', '2025-03-20 14:00:00', '2025-03-25 15:00:00'),
@@ -398,7 +396,7 @@ SELECT * FROM [Driver]
 INSERT INTO [DriverLocation] (DriverID, GeohashID, LastUpdated)
 VALUES
 ('DRIVE00001', (SELECT GeohashID FROM Location WHERE City = 'Financial District'), '2025-03-09 14:30:00'),
-('DRIVE00002', (SELECT GeohashID FROM Location WHERE City = 'Boston'), '2025-03-09 15:45:00'),
+('DRIVE00002', (SELECT GeohashID FROM Location WHERE City = 'Midtown Manhattan'), '2025-03-09 15:45:00'),
 ('DRIVE00003', (SELECT GeohashID FROM Location WHERE City = 'Boston'), '2025-03-09 16:20:00'),
 ('DRIVE00004', (SELECT GeohashID FROM Location WHERE City = 'Upper West Side'), '2025-03-09 17:10:00'),
 ('DRIVE00005', (SELECT GeohashID FROM Location WHERE City = 'Jamaica Estates'), '2025-03-10 08:15:00'),
@@ -455,10 +453,7 @@ VALUES
 ('Wisconsin', 1.85, 5.00, 8.75),
 ('Illinois', 2.00, 6.25, 9.00);
 SELECT * FROM [Ratecard];
-
-
-SELECT * FROM Rider
-
+ 
 
 INSERT INTO [TripRequest] ( [RiderID],[PickupLatitude], [PickupLongitude],[DropoffLatitude], [DropoffLongitude],[RequestTime], [Status]) 
 VALUES
@@ -478,10 +473,10 @@ VALUES
  ('RIDER00014', 42.3751, -71.1056, 42.3876, -71.0995, '2025-03-31 11:15:00', 'Completed'),
  ('RIDER00015', 42.4584, -71.1402, 42.4928, -71.0753, '2025-03-31 11:30:00', 'Completed'),
  ('RIDER00016', 42.2373, -71.0022, 42.4668, -70.9495, '2025-03-31 11:45:00', 'Pending'),
- ('RIDER00017', 42.5195, -70.8967, 42.6334, -70.7829, '2025-03-31 12:00:00', 'Completed');
+ ('RIDER00017', 42.5195, -70.8967, 42.6334, -70.7829, '2025-03-31 12:00:00', 'Completed'),
+ ('RIDER00018', 40.5749, -73.9840, 40.7075, -74.0113, '2025-03-31 08:00:00', 'Pending');
 SELECT * FROM [TripRequest]
 
-SELECT * FROM [TripRequest] WHERE Status='Completed'
 
 INSERT INTO [Invoice] (TripRequestID, Distance, Price)
 VALUES
