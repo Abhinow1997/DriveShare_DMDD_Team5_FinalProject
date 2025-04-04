@@ -500,16 +500,16 @@ SELECT * FROM [Invoice];
 
 INSERT INTO [PaymentRequest] (InvoiceID, RiderID, MethodOfPayment, Amount, Status)
 VALUES
-('INVO_00031', 'RIDER00002', 'OnlineWallet', 218.50, 'Completed'),
-('INVO_00032', 'RIDER00003', 'OnlineWallet', 270.30, 'Completed'),
-('INVO_00033', 'RIDER00004', 'OnlineWallet', 330.15, 'Completed'),
-('INVO_00034', 'RIDER00005', 'OnlineWallet', 285.75, 'Completed'),
-('INVO_00035', 'RIDER00006', 'Card', 315.00, 'Completed'),
-('INVO_00036', 'RIDER00007', 'Card', 345.50, 'Completed'),
-('INVO_00037', 'RIDER00008', 'Card', 263.85, 'Completed'),
-('INVO_00038', 'RIDER00009', 'Card', 376.10, 'Completed'),
-('INVO_00039', 'RIDER00010', 'Card', 315.45, 'Completed'),
-('INVO_00040', 'RIDER00011', 'Card', 353.40, 'Completed');
+('INVO_00001', 'RIDER00002', 'OnlineWallet', 218.50, 'Completed'),
+('INVO_00002', 'RIDER00003', 'OnlineWallet', 270.30, 'Completed'),
+('INVO_00003', 'RIDER00004', 'OnlineWallet', 330.15, 'Completed'),
+('INVO_00004', 'RIDER00005', 'OnlineWallet', 285.75, 'Completed'),
+('INVO_00005', 'RIDER00006', 'Card', 315.00, 'Completed'),
+('INVO_00006', 'RIDER00007', 'Card', 345.50, 'Completed'),
+('INVO_00007', 'RIDER00008', 'Card', 263.85, 'Completed'),
+('INVO_00008', 'RIDER00009', 'Card', 376.10, 'Completed'),
+('INVO_00009', 'RIDER00010', 'Card', 315.45, 'Completed'),
+('INVO_00010', 'RIDER00011', 'Card', 353.40, 'Completed');
 SELECT * FROM [PaymentRequest];
 
 
@@ -525,7 +525,7 @@ SELECT * FROM [Card];
 
 INSERT INTO [OnlineWallet] (PaymentID, WalletID, WalletProvider, AccountEmail)
 VALUES
-('PAY_R00001', 'WALLET001', 'PayPal', 'rider00002@example.com'),
+('PAY_R00005', 'WALLET001', 'PayPal', 'rider00002@example.com'),
 ('PAY_R00002', 'WALLET002', 'Venmo', 'rider00003@example.com'),
 ('PAY_R00003', 'WALLET003', 'ApplePay', 'rider00004@example.com'),
 ('PAY_R00004', 'WALLET004', 'GooglePay', 'rider00005@example.com');
