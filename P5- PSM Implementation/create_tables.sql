@@ -1,3 +1,4 @@
+/**********************DATABASE CREATION**********************/
 /*STEP 1 : Creation of Database*/
 USE master;
 GO
@@ -6,6 +7,8 @@ GO
 USE Team2_FinalProject_DMDD_v2;
 GO 
 
+
+/**********************User Defined Functions(UDFs)**********************/
 /*STEP 2 : Creation of Functions*/
 /*Functions are being used to pre calculate some of the required vales for tables*/
 --Geohash calculaton script
@@ -150,6 +153,8 @@ END;
 
 GO
 
+
+/**********************DDL SCRIPTS - TABLES CREATION**********************/
 USE Team2_FinalProject_DMDD_v2;
 
 -- Table for Admin
@@ -381,4 +386,13 @@ CREATE TABLE [OnlineWallet] (
   [AccountEmail] varchar(50),
   CONSTRAINT [PK_OnlineWallet] PRIMARY KEY ([PaymentID]),
   CONSTRAINT [FK_OnlineWallet_PaymentRequest] FOREIGN KEY ([PaymentID]) REFERENCES [PaymentRequest]([PaymentID])
+);
+
+-- Driver status audit/logging
+CREATE TABLE DriverStatusAudit (
+    AuditID INT IDENTITY(1,1) PRIMARY KEY,
+    DriverID VARCHAR(10) NOT NULL,
+    PreviousStatus VARCHAR(15) NOT NULL,
+    NewStatus VARCHAR(15) NOT NULL,
+    ChangeDate DATETIME NOT NULL
 );

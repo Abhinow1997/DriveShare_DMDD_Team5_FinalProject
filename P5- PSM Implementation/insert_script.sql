@@ -1,3 +1,4 @@
+/**********************DML SCRIPTS - SAMPLE DATA INSERTION**********************/
 USE Team2_FinalProject_DMDD_v2;
 GO
 

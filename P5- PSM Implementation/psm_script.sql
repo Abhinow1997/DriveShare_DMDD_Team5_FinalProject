@@ -1,7 +1,7 @@
 USE Team2_FinalProject_DMDD_v2;
 
 GO
-
+/**********************STORED PROCEDURE**********************/
 /**1. Stored Procedure - AssignDriverToTrip Working Example**/
 CREATE PROCEDURE dbo.AssignDriverToTrip
     @TripRequestID VARCHAR(10),
@@ -176,6 +176,8 @@ BEGIN
     END CATCH;
 END;
 
+GO 
+
 -- Examples of working Completed Trips
 DECLARE @ResultMessage VARCHAR(255);
 EXEC dbo.CompleteTrip 
@@ -227,14 +229,6 @@ BEGIN
             @CurrentRating = Rating
         FROM Driver
         WHERE DriverID = @DriverID;
-        
-        IF @@ROWCOUNT = 0
-        BEGIN
-            SET @Message = 'Driver not found with ID: ' + @DriverID;
-            ROLLBACK TRANSACTION;
-            RETURN;
-        END
-
         -- Calculate the new average rating
         -- For the first ride, use the new rating directly
         -- For subsequent rides, calculate weighted average
@@ -242,7 +236,6 @@ BEGIN
             SET @NewRating = @Rating;
         ELSE
             SET @NewRating = ((@CurrentRating * @TotalCompletedRides) + @Rating) / (@TotalCompletedRides + 1);
-        
         IF @NewRating < 0 SET @NewRating = 0;
         IF @NewRating > 5 SET @NewRating = 5;
 
@@ -261,7 +254,6 @@ BEGIN
         BEGIN
             ROLLBACK TRANSACTION;
         END
-        
         SET @Message = 'Error occurred during the process: ' + ERROR_MESSAGE();
     END CATCH;
 END;
@@ -366,3 +358,197 @@ EXEC dbo.ProcessPayment
     @MethodOfPayment = 'OnlineWallet',
     @Message = @ResultMessage OUTPUT;
 SELECT @ResultMessage AS 'Result';
+
+
+/**********************VIEWS**********************/
+USE Team2_FinalProject_DMDD_v2;
+GO
+
+/******* View 1 : Registered Users with Admin details *******/
+CREATE VIEW vw_RegisteredUsersWithAdmin AS
+SELECT RU.UserID, RU.FirstName, RU.LastName, RU.EmailID, RU.PhoneNumber, RU.Type, 
+       A.AdminID, A.FirstName AS AdminFirstName, A.LastName AS AdminLastName
+FROM RegisteredUsers RU
+JOIN Admin A ON RU.AdminID = A.AdminID;
+GO
+SELECT * FROM vw_RegisteredUsersWithAdmin;
+GO
+
+/******* View 2 : View for Admin user count*******/
+CREATE VIEW vw_AdminUserCount AS
+SELECT A.AdminID, A.FirstName, A.LastName, COUNT(RU.UserID) AS UserCount
+FROM Admin A
+LEFT JOIN RegisteredUsers RU ON A.AdminID = RU.AdminID
+GROUP BY A.AdminID, A.FirstName, A.LastName;
+GO
+SELECT * FROM vw_AdminUserCount;
+GO
+
+
+/******* View 3 : View for Active Drivers Overview*******/
+CREATE VIEW vw_ActiveDriversOverview AS
+SELECT 
+    d.DriverID,
+    ru.FirstName + ' ' + ru.LastName AS DriverName,
+    d.LicenseNo,
+    d.AvailabilityStatus,
+    d.TotalCompletedRides,
+    d.TotalEarnings,
+    d.Rating,
+    dl.GeohashID AS CurrentLocation,
+    l.City,
+    l.State
+FROM Driver d
+JOIN RegisteredUsers ru ON d.UserID = ru.UserID
+JOIN DriverLocation dl ON d.DriverID = dl.DriverID
+JOIN Location l ON dl.GeohashID = l.GeohashID;
+GO
+SELECT * FROM vw_ActiveDriversOverview;
+GO
+
+/******* View 4 : For Car Rental Performance*******/
+CREATE VIEW vw_CarRentalPerformance AS
+SELECT 
+    r.RenterID,
+    ru.FirstName + ' ' + ru.LastName AS RenterName,
+    r.CompanyName,
+    r.TotalRentedCars,
+    r.TotalEarnings,
+    r.TotalRentalTime,
+    COUNT(rc.CarID) AS CurrentlyRentedCars
+FROM Renter r
+JOIN RegisteredUsers ru ON r.UserID = ru.UserID
+LEFT JOIN Renter_Car rc ON r.RenterID = rc.RenterID
+GROUP BY 
+    r.RenterID,
+    ru.FirstName,
+    ru.LastName,
+    r.CompanyName,
+    r.TotalRentedCars,
+    r.TotalEarnings,
+    r.TotalRentalTime;
+GO
+SELECT * FROM vw_CarRentalPerformance;
+GO
+
+/******* View 5 : For Payment Invoice Summary*******/
+CREATE VIEW vw_PaymentInvoiceSummary AS
+SELECT 
+    pr.PaymentID,
+    pr.InvoiceID,
+    r.RiderID,
+    ru.FirstName + ' ' + ru.LastName AS RiderName,
+    pr.MethodOfPayment,
+    pr.Amount,
+    pr.Status AS PaymentStatus,
+    i.Distance,
+    i.Price AS InvoicePrice,
+    tr.RequestTime,
+    tr.Status AS TripStatus
+FROM PaymentRequest pr
+JOIN Invoice i ON pr.InvoiceID = i.InvoiceID
+JOIN TripRequest tr ON i.TripRequestID = tr.TripRequestID
+JOIN Rider r ON pr.RiderID = r.RiderID
+JOIN RegisteredUsers ru ON r.UserID = ru.UserID;
+GO
+SELECT * FROM vw_PaymentInvoiceSummary;
+GO
+
+/********************** TRIGGERS **********************/
+-- Drop conflicting triggers if they exist
+DROP TRIGGER IF EXISTS TRG_Prevent_Delete_Car;
+GO
+
+DROP TRIGGER IF EXISTS TRG_UpdateDriverLocation;
+GO
+
+DROP TRIGGER IF EXISTS TRG_CreateInvoice_OnTripCompletion;
+GO
+
+/******* DML Trigger 1: To retrieve the updated driver location details*******/
+CREATE TRIGGER TRG_UpdateDriverLocation
+ON DriverLocation
+AFTER UPDATE
+AS
+BEGIN
+    DECLARE @DriverID VARCHAR(10), @GeohashID VARCHAR(12), @LastUpdated DATETIME;
+    SELECT @DriverID = DriverID, @GeohashID = GeohashID, @LastUpdated = LastUpdated
+    FROM inserted;
+
+    -- Update the last location of the driver
+    UPDATE DriverLocation
+    SET LastUpdated = GETDATE()
+    WHERE DriverID = @DriverID;
+END;
+
+-- Step 1: Check current driver location data
+SELECT * FROM DriverLocation
+WHERE DriverID = 'DRIVE00002';
+
+-- Step 2: Update the location
+UPDATE DriverLocation
+SET GeohashID = 'drt2zp2m' 
+WHERE DriverID = 'DRIVE00002';
+
+-- Step 3: Verify the LastUpdated timestamp was updated
+SELECT * FROM DriverLocation
+WHERE DriverID = 'DRIVE00002';
+
+GO
+
+/******* DML Trigger 2: To audit trigger to log all driver status changes*******/
+CREATE TRIGGER TRG_Audit_DriverStatusChange
+ON Driver
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Only proceed if availability status changed
+    IF UPDATE(AvailabilityStatus)
+    BEGIN
+        -- Insert into audit log
+        INSERT INTO DriverStatusAudit (
+            DriverID,
+            PreviousStatus,
+            NewStatus,
+            ChangeDate
+        )
+        SELECT 
+            i.DriverID,
+            d.AvailabilityStatus,
+            i.AvailabilityStatus,
+            GETDATE()
+        FROM inserted i
+        JOIN deleted d ON i.DriverID = d.DriverID
+        WHERE i.AvailabilityStatus <> d.AvailabilityStatus;
+    END
+END;
+
+GO
+
+-- Step 1: Check current driver status
+SELECT DriverID, AvailabilityStatus 
+FROM Driver
+WHERE DriverID = 'DRIVE00004';
+GO
+-- Step 2: Change the driver's status
+UPDATE Driver
+SET AvailabilityStatus = 'Out-of-Service'
+WHERE DriverID = 'DRIVE00004' AND AvailabilityStatus = 'Available';
+GO
+-- Step 3: Verify the audit record was created
+SELECT * FROM DriverStatusAudit
+WHERE DriverID = 'DRIVE00004'
+ORDER BY ChangeDate DESC;
+GO
+-- Step 4: Change the status again to create another audit record
+UPDATE Driver
+SET AvailabilityStatus = 'Available'
+WHERE DriverID = 'DRIVE00004';
+GO
+-- Step 5: Verify multiple audit records exist for this driver
+SELECT * FROM DriverStatusAudit
+WHERE DriverID = 'DRIVE00004'
+ORDER BY ChangeDate DESC;
+GO
