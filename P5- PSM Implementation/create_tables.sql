@@ -2,9 +2,9 @@
 /*STEP 1 : Creation of Database*/
 USE master;
 GO
-CREATE DATABASE Team2_FinalProject_DMDD_v2;
+CREATE DATABASE Team2_FinalProject_DMDD;
 GO
-USE Team2_FinalProject_DMDD_v2;
+USE Team2_FinalProject_DMDD;
 GO 
 
 
@@ -155,7 +155,7 @@ GO
 
 
 /**********************DDL SCRIPTS - TABLES CREATION**********************/
-USE Team2_FinalProject_DMDD_v2;
+USE Team2_FinalProject_DMDD;
 
 -- Table for Admin
 DROP TABLE IF EXISTS [Admin]
@@ -260,8 +260,8 @@ DROP TABLE IF EXISTS [Renter_Car],[Driver_Car];
 CREATE TABLE [Renter_Car] (
   [RenterID] varchar(10) NOT NULL REFERENCES Renter(RenterID),
   [CarID] varchar(10) NOT NULL REFERENCES Car(CarID),
-  [RentalStartDate] datetime NOT NULL,
-  [RentalEndDate] datetime NOT NULL,
+  [RentalStartDate] varchar(30) NOT NULL,
+  [RentalEndDate] varchar(30),
   CONSTRAINT [PK_RenterCar] PRIMARY KEY ([RenterID], [CarID])
 );
 CREATE TABLE [Driver_Car] (
@@ -370,7 +370,7 @@ CREATE TABLE [Card] (
   [PaymentID] varchar(10) NOT NULL,
   [CardNumber] varchar(16) NOT NULL,
   [CardHolder] varchar(50) NOT NULL,
-  [ExpiryDate] date NOT NULL,
+  [ExpiryDate] varchar(30) NOT NULL,
   [CVV] varchar(4) NOT NULL,
   [Type] varchar(20),
   CONSTRAINT [PK_Card] PRIMARY KEY ([PaymentID]),

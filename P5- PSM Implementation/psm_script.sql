@@ -1,4 +1,4 @@
-USE Team2_FinalProject_DMDD_v2;
+USE Team2_FinalProject_DMDD;
 
 GO
 /**********************STORED PROCEDURE**********************/
@@ -361,9 +361,8 @@ SELECT @ResultMessage AS 'Result';
 
 
 /**********************VIEWS**********************/
-USE Team2_FinalProject_DMDD_v2;
+USE Team2_FinalProject_DMDD;
 GO
-
 /******* View 1 : Registered Users with Admin details *******/
 CREATE VIEW vw_RegisteredUsersWithAdmin AS
 SELECT RU.UserID, RU.FirstName, RU.LastName, RU.EmailID, RU.PhoneNumber, RU.Type, 
@@ -372,8 +371,9 @@ FROM RegisteredUsers RU
 JOIN Admin A ON RU.AdminID = A.AdminID;
 GO
 SELECT * FROM vw_RegisteredUsersWithAdmin;
-GO
 
+
+GO
 /******* View 2 : View for Admin user count*******/
 CREATE VIEW vw_AdminUserCount AS
 SELECT A.AdminID, A.FirstName, A.LastName, COUNT(RU.UserID) AS UserCount
@@ -383,7 +383,6 @@ GROUP BY A.AdminID, A.FirstName, A.LastName;
 GO
 SELECT * FROM vw_AdminUserCount;
 GO
-
 
 /******* View 3 : View for Active Drivers Overview*******/
 CREATE VIEW vw_ActiveDriversOverview AS
@@ -405,6 +404,8 @@ JOIN Location l ON dl.GeohashID = l.GeohashID;
 GO
 SELECT * FROM vw_ActiveDriversOverview;
 GO
+
+
 
 /******* View 4 : For Car Rental Performance*******/
 CREATE VIEW vw_CarRentalPerformance AS

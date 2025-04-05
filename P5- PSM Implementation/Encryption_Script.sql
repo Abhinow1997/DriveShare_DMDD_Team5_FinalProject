@@ -1,6 +1,6 @@
 --Encryption Script
 
-USE Team2_FinalProject_DMDD_v2;
+USE Team2_FinalProject_DMDD;
 GO
 
 -- STEP 1: Drop Constraints (If They Exist)
@@ -10,15 +10,6 @@ IF EXISTS (
 )
 BEGIN
   ALTER TABLE [RegisteredUsers] DROP CONSTRAINT [UQ_RegisteredUsers_EmailID];
-END
-GO
-
-IF EXISTS (
-  SELECT * FROM sys.objects 
-  WHERE name = 'UQ_Driver_LicenseNo' AND type = 'UQ'
-)
-BEGIN
-  ALTER TABLE [Driver] DROP CONSTRAINT [UQ_Driver_LicenseNo];
 END
 GO
 
@@ -80,9 +71,7 @@ GO
 ALTER TABLE [RegisteredUsers]  
 ADD [Password_Encrypted] VARBINARY(256),
     [EmailID_Encrypted] VARBINARY(256),
-    [PhoneNumber_Encrypted] VARBINARY(256),
-    [FirstName_Encrypted] VARBINARY(256),
-    [LastName_Encrypted] VARBINARY(256);
+    [PhoneNumber_Encrypted] VARBINARY(256)
 GO
 
 OPEN SYMMETRIC KEY DriveShareSymmetricKey DECRYPTION BY CERTIFICATE DriveShareCert;
@@ -90,40 +79,18 @@ UPDATE [RegisteredUsers]
 SET 
   [Password_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), [Password]),
   [EmailID_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), [EmailID]),
-  [PhoneNumber_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), [PhoneNumber]),
-  [FirstName_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), [FirstName]),
-  [LastName_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), [LastName]);
+  [PhoneNumber_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), [PhoneNumber])
 CLOSE SYMMETRIC KEY DriveShareSymmetricKey;
 GO
 
-ALTER TABLE [RegisteredUsers] DROP COLUMN [Password], [EmailID], [PhoneNumber], [FirstName], [LastName];
+ALTER TABLE [RegisteredUsers] DROP COLUMN [Password], [EmailID], [PhoneNumber];
 EXEC sp_rename 'RegisteredUsers.Password_Encrypted', 'Password', 'COLUMN';
 EXEC sp_rename 'RegisteredUsers.EmailID_Encrypted', 'EmailID', 'COLUMN';
 EXEC sp_rename 'RegisteredUsers.PhoneNumber_Encrypted', 'PhoneNumber', 'COLUMN';
-EXEC sp_rename 'RegisteredUsers.FirstName_Encrypted', 'FirstName', 'COLUMN';
-EXEC sp_rename 'RegisteredUsers.LastName_Encrypted', 'LastName', 'COLUMN';
 GO
 
 -- Recreate Unique Constraints
 ALTER TABLE [RegisteredUsers] ADD CONSTRAINT [UQ_RegisteredUsers_EmailID] UNIQUE ([EmailID]);
-GO
-
--- STEP 6: Encrypt Driver Table
-ALTER TABLE [Driver]  
-ADD [LicenseNo_Encrypted] VARBINARY(256);
-GO
-
-OPEN SYMMETRIC KEY DriveShareSymmetricKey DECRYPTION BY CERTIFICATE DriveShareCert;
-UPDATE [Driver]  
-SET [LicenseNo_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), [LicenseNo]);
-CLOSE SYMMETRIC KEY DriveShareSymmetricKey;
-GO
-
-ALTER TABLE [Driver] DROP COLUMN [LicenseNo];
-EXEC sp_rename 'Driver.LicenseNo_Encrypted', 'LicenseNo', 'COLUMN';
-GO
-
-ALTER TABLE [Driver] ADD CONSTRAINT [UQ_Driver_LicenseNo] UNIQUE ([LicenseNo]);
 GO
 
 -- STEP 7: Encrypt Card Table
@@ -175,7 +142,7 @@ GO
 
 --Decryption Script
 
-USE Team2_FinalProject_DMDD_v2;
+USE Team2_FinalProject_DMDD;
 GO
 
 -- Open the symmetric key for decryption
@@ -196,17 +163,8 @@ GO
 SELECT 
   UserID,
   CONVERT(VARCHAR(50), DecryptByKey([EmailID])) AS DecryptedEmail,
-  CONVERT(VARCHAR(10), DecryptByKey([PhoneNumber])) AS DecryptedPhone,
-  CONVERT(VARCHAR(10), DecryptByKey([FirstName])) AS DecryptedFirstName,
-  CONVERT(VARCHAR(50), DecryptByKey([LastName])) AS DecryptedLastName
+  CONVERT(VARCHAR(10), DecryptByKey([PhoneNumber])) AS DecryptedPhone
 FROM [RegisteredUsers];
-GO
-
--- View decrypted Driver data
-SELECT 
-  DriverID,
-  CONVERT(VARCHAR(10), DecryptByKey([LicenseNo])) AS DecryptedLicenseNo
-FROM [Driver];
 GO
 
 -- View decrypted Card data (FIXED EXPIRYDATE)

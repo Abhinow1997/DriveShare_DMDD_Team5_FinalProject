@@ -1,5 +1,5 @@
 /**********************DML SCRIPTS - SAMPLE DATA INSERTION**********************/
-USE Team2_FinalProject_DMDD_v2;
+USE Team2_FinalProject_DMDD;
 GO
 
 INSERT INTO [Admin] (FirstName, LastName, Password)
