@@ -333,7 +333,7 @@ CREATE TABLE [TripRequest] (
   CONSTRAINT [CHK_Status] CHECK ([Status] IN ('Pending', 'Ride-In-Process','Completed','Canceled'))
 );
 
-
+ 
 -- Table for Invoice
 DROP TABLE IF EXISTS [Invoice];
 CREATE TABLE [Invoice] (

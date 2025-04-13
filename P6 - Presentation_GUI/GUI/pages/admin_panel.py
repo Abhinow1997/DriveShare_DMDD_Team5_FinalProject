@@ -105,49 +105,65 @@ def show():
                         with engine.begin() as trans:
                             trans.execute(text("OPEN SYMMETRIC KEY DriveShareSymmetricKey DECRYPTION BY CERTIFICATE DriveShareCert"))
 
+                            # 1️⃣ Insert into RegisteredUsers
                             trans.execute(text("""
-                            INSERT INTO RegisteredUsers (
-                                AdminID, FirstName, LastName, Password, EmailID, PhoneNumber, Type
-                            )
-                            VALUES (
-                                :admin_id,
-                                :fname,
-                                :lname,
-                                EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:pwd AS VARCHAR(100))),
-                                EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:email AS VARCHAR(100))),
-                                EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:phone AS VARCHAR(20))),
-                                :utype
-                            )
-                        """), {
-                            "admin_id": admin["AdminID"],
-                            "fname": new_firstname,
-                            "lname": new_lastname,
-                            "pwd": new_password,
-                            "email": new_email,
-                            "phone": new_phone,
-                            "utype": new_type
-                        })
+                                INSERT INTO RegisteredUsers (
+                                    AdminID, FirstName, LastName, Password, EmailID, PhoneNumber, Type
+                                )
+                                VALUES (
+                                    :admin_id,
+                                    :fname,
+                                    :lname,
+                                    EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:pwd AS VARCHAR(100))),
+                                    EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:email AS VARCHAR(100))),
+                                    EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:phone AS VARCHAR(20))),
+                                    :utype
+                                )
+                            """), {
+                                "admin_id": admin["AdminID"],
+                                "fname": new_firstname,
+                                "lname": new_lastname,
+                                "pwd": new_password,
+                                "email": new_email,
+                                "phone": new_phone,
+                                "utype": new_type
+                            })
 
+                            # 2️⃣ Get the newly added UserID
                             new_user = trans.execute(text("SELECT TOP 1 UserID FROM RegisteredUsers ORDER BY ID DESC")).fetchone()
                             new_user_id = new_user.UserID
 
+                            # 3️⃣ Insert into the appropriate role table
                             if new_type == "Renter":
                                 trans.execute(text("""
                                     INSERT INTO Renter (UserID, TotalRentedCars, TotalEarnings, TotalRentalTime, CompanyName)
                                     VALUES (:uid, 0, 0.00, 0, NULL)
                                 """), {"uid": new_user_id})
+
                             elif new_type == "Driver":
                                 trans.execute(text("""
                                     INSERT INTO Driver (UserID, LicenseNo, AvailabilityStatus, TotalCompletedRides, TotalEarnings, Rating)
                                     VALUES (:uid, 'AUTO1234', 'Available', 0, 0.00, 0.0)
                                 """), {"uid": new_user_id})
+
                             elif new_type == "Rider":
                                 trans.execute(text("""
                                     INSERT INTO Rider (UserID, TotalPreviousRides, AmountDue)
                                     VALUES (:uid, 0, 0.00)
                                 """), {"uid": new_user_id})
 
+                                # ✅ Confirm Rider insert and retrieve RiderID
+                                new_rider = trans.execute(text("""
+                                    SELECT TOP 1 RiderID FROM Rider WHERE UserID = :uid ORDER BY ID DESC
+                                """), {"uid": new_user_id}).fetchone()
+
+                                if new_rider:
+                                    st.info(f"🆕 Rider created with RiderID: {new_rider.RiderID}")
+                                else:
+                                    st.warning("⚠️ Rider insert attempted but not found in table.")
+
                         st.success(f"✅ User added successfully! UserID: {new_user_id}")
+
                     except Exception as e:
                         st.error(f"❌ Error: {e}")
                 else:

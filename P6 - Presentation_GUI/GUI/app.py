@@ -1,5 +1,5 @@
 import streamlit as st
-from pages import admin_panel  # More panels coming soon
+from pages import admin_panel ,rider_panel
 
 st.set_page_config(page_title="DriveShare Admin Portal", layout="wide")
 
@@ -11,4 +11,4 @@ if role == "Admin":
 elif role == "Driver":
     st.warning("🚧 Driver panel coming soon!")
 elif role == "Rider":
-    st.warning("🚧 Rider panel coming soon!")
+    rider_panel.show()
