@@ -86,6 +86,7 @@ def show():
         with tab3:
             st.subheader("➕ Add New Registered User")
 
+            # Common Fields
             new_firstname = st.text_input("First Name", key="new_fname")
             new_lastname = st.text_input("Last Name", key="new_lname")
             new_password = st.text_input("Password", type="password", key="new_pass")
@@ -93,78 +94,125 @@ def show():
             new_phone = st.text_input("Phone Number", key="new_phone")
             new_type = st.selectbox("User Type", ["Renter", "Driver", "Rider"], key="new_type")
 
+            # Role-specific Fields
+            new_license = None
+            new_company = None
+
+            if new_type == "Driver":
+                new_license = st.text_input("License Number", key="driver_license")
+            elif new_type == "Renter":
+                new_company = st.text_input("Company Name", key="renter_company")
+
             if st.button("Add User", key="add_user_btn"):
+                # Clean values
                 new_firstname = new_firstname.strip()
                 new_lastname = new_lastname.strip()
                 new_password = new_password.strip()
                 new_email = new_email.strip()
                 new_phone = new_phone.strip()
+                if new_license:
+                    new_license = new_license.strip()
+                if new_company:
+                    new_company = new_company.strip()
 
+                # Validation
                 if all([new_firstname, new_lastname, new_password, new_email, new_phone, new_type]):
-                    try:
-                        with engine.begin() as trans:
-                            trans.execute(text("OPEN SYMMETRIC KEY DriveShareSymmetricKey DECRYPTION BY CERTIFICATE DriveShareCert"))
+                    if new_type == "Driver" and not new_license:
+                        st.warning("Please enter a license number for the driver.")
+                    elif new_type == "Renter" and not new_company:
+                        st.warning("Please enter a company name for the renter.")
+                    else:
+                        try:
+                            with engine.begin() as trans:
+                                trans.execute(text("OPEN SYMMETRIC KEY DriveShareSymmetricKey DECRYPTION BY CERTIFICATE DriveShareCert"))
 
-                            # 1️⃣ Insert into RegisteredUsers
-                            trans.execute(text("""
-                                INSERT INTO RegisteredUsers (
-                                    AdminID, FirstName, LastName, Password, EmailID, PhoneNumber, Type
-                                )
-                                VALUES (
-                                    :admin_id,
-                                    :fname,
-                                    :lname,
-                                    EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:pwd AS VARCHAR(100))),
-                                    EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:email AS VARCHAR(100))),
-                                    EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:phone AS VARCHAR(20))),
-                                    :utype
-                                )
-                            """), {
-                                "admin_id": admin["AdminID"],
-                                "fname": new_firstname,
-                                "lname": new_lastname,
-                                "pwd": new_password,
-                                "email": new_email,
-                                "phone": new_phone,
-                                "utype": new_type
-                            })
-
-                            # 2️⃣ Get the newly added UserID
-                            new_user = trans.execute(text("SELECT TOP 1 UserID FROM RegisteredUsers ORDER BY ID DESC")).fetchone()
-                            new_user_id = new_user.UserID
-
-                            # 3️⃣ Insert into the appropriate role table
-                            if new_type == "Renter":
+                                # 1️⃣ Insert into RegisteredUsers
                                 trans.execute(text("""
-                                    INSERT INTO Renter (UserID, TotalRentedCars, TotalEarnings, TotalRentalTime, CompanyName)
-                                    VALUES (:uid, 0, 0.00, 0, NULL)
-                                """), {"uid": new_user_id})
+                                    INSERT INTO RegisteredUsers (
+                                        AdminID, FirstName, LastName, Password, EmailID, PhoneNumber, Type
+                                    )
+                                    VALUES (
+                                        :admin_id,
+                                        :fname,
+                                        :lname,
+                                        EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:pwd AS VARCHAR(100))),
+                                        EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:email AS VARCHAR(100))),
+                                        EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CAST(:phone AS VARCHAR(20))),
+                                        :utype
+                                    )
+                                """), {
+                                    "admin_id": admin["AdminID"],
+                                    "fname": new_firstname,
+                                    "lname": new_lastname,
+                                    "pwd": new_password,
+                                    "email": new_email,
+                                    "phone": new_phone,
+                                    "utype": new_type
+                                })
 
-                            elif new_type == "Driver":
-                                trans.execute(text("""
-                                    INSERT INTO Driver (UserID, LicenseNo, AvailabilityStatus, TotalCompletedRides, TotalEarnings, Rating)
-                                    VALUES (:uid, 'AUTO1234', 'Available', 0, 0.00, 0.0)
-                                """), {"uid": new_user_id})
+                                # 2️⃣ Get new UserID
+                                new_user = trans.execute(text("SELECT TOP 1 UserID FROM RegisteredUsers ORDER BY ID DESC")).fetchone()
+                                new_user_id = new_user.UserID
 
-                            elif new_type == "Rider":
-                                trans.execute(text("""
-                                    INSERT INTO Rider (UserID, TotalPreviousRides, AmountDue)
-                                    VALUES (:uid, 0, 0.00)
-                                """), {"uid": new_user_id})
+                                # 3️⃣ Role-specific Inserts
+                                if new_type == "Renter":
+                                    trans.execute(text("""
+                                        INSERT INTO Renter (UserID, TotalRentedCars, TotalEarnings, TotalRentalTime, CompanyName)
+                                        VALUES (:uid, 0, 0.00, 0, :company)
+                                    """), {"uid": new_user_id, "company": new_company})
+                                    new_renter = trans.execute(text("""
+                                        SELECT TOP 1 RenterID FROM Renter WHERE UserID = :uid ORDER BY ID DESC
+                                    """), {"uid": new_user_id}).fetchone()
+                                    st.info(f"🆕 Renter created with RenterID: {new_renter.RenterID}")
 
-                                # ✅ Confirm Rider insert and retrieve RiderID
-                                new_rider = trans.execute(text("""
-                                    SELECT TOP 1 RiderID FROM Rider WHERE UserID = :uid ORDER BY ID DESC
-                                """), {"uid": new_user_id}).fetchone()
+                                elif new_type == "Driver":
+                                    trans.execute(text("""
+                                        INSERT INTO Driver (UserID, LicenseNo, AvailabilityStatus, TotalCompletedRides, TotalEarnings, Rating)
+                                        VALUES (:uid, :license, 'Available', 0, 0.00, 0.0)
+                                    """), {"uid": new_user_id, "license": new_license})
 
-                                if new_rider:
+                                    new_driver = trans.execute(text("""
+                                        SELECT TOP 1 DriverID FROM Driver WHERE UserID = :uid ORDER BY ID DESC
+                                    """), {"uid": new_user_id}).fetchone()
+
+                                    if new_driver:
+                                        st.info(f"🆕 Driver created with DriverID: {new_driver.DriverID}")
+
+                                        # 🌐 Assign random GeohashID from NY for location
+                                        geo = trans.execute(text("""
+                                            SELECT TOP 1 GeohashID
+                                            FROM Location
+                                            WHERE State = 'New York'
+                                            ORDER BY NEWID()
+                                        """)).scalar()
+
+                                        if geo:
+                                            trans.execute(text("""
+                                                INSERT INTO DriverLocation (DriverID, GeohashID)
+                                                VALUES (:did, :geo)
+                                            """), {
+                                                "did": new_driver.DriverID,
+                                                "geo": geo
+                                            })
+                                            st.info(f"📍 Driver location initialized in NY (Geohash: {geo})")
+                                        else:
+                                            st.warning("⚠️ No available location in NY to assign.")
+                                    else:
+                                        st.warning("⚠️ Driver insert attempted but not found in table.")
+
+                                elif new_type == "Rider":
+                                    trans.execute(text("""
+                                        INSERT INTO Rider (UserID, TotalPreviousRides, AmountDue)
+                                        VALUES (:uid, 0, 0.00)
+                                    """), {"uid": new_user_id})
+                                    new_rider = trans.execute(text("""
+                                        SELECT TOP 1 RiderID FROM Rider WHERE UserID = :uid ORDER BY ID DESC
+                                    """), {"uid": new_user_id}).fetchone()
                                     st.info(f"🆕 Rider created with RiderID: {new_rider.RiderID}")
-                                else:
-                                    st.warning("⚠️ Rider insert attempted but not found in table.")
 
-                        st.success(f"✅ User added successfully! UserID: {new_user_id}")
+                            st.success(f"✅ User added successfully! UserID: {new_user_id}")
 
-                    except Exception as e:
-                        st.error(f"❌ Error: {e}")
+                        except Exception as e:
+                            st.error(f"❌ Error: {e}")
                 else:
                     st.warning("Please fill in all required fields.")

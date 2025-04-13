@@ -1,5 +1,5 @@
 import streamlit as st
-from pages import admin_panel ,rider_panel
+from pages import admin_panel ,rider_panel, driver_panel
 
 st.set_page_config(page_title="DriveShare Admin Portal", layout="wide")
 
@@ -9,6 +9,6 @@ role = st.sidebar.selectbox("Login as", ["Select", "Admin", "Driver", "Rider"])
 if role == "Admin":
     admin_panel.show()
 elif role == "Driver":
-    st.warning("🚧 Driver panel coming soon!")
+    driver_panel.show()
 elif role == "Rider":
     rider_panel.show()
