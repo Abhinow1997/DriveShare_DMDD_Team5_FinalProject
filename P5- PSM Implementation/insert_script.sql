@@ -8,22 +8,7 @@ VALUES
 ('Akshay', 'Veerabhadraiah', 'admin'),
 ('Neha', 'Suresh', 'admin'),
 ('Om', 'Raut', 'admin'),
-('Poojith', 'Kotipalli', 'admin'),
-('Rajesh', 'Kumar', 'admin123'),
-('Priya', 'Sharma', 'secure456'),
-('Michael', 'Johnson', 'pass789'),
-('Sarah', 'Williams', 'adminpwd'),
-('David', 'Miller', 'access123'),
-('Jessica', 'Brown', 'control789'),
-('Robert', 'Davis', 'manager456'),
-('Jennifer', 'Wilson', 'admin2022'),
-('Daniel', 'Taylor', 'secure2023'),
-('Emily', 'Anderson', 'system456'),
-('Christopher', 'Thomas', 'admin789'),
-('Amanda', 'Jackson', 'control123'),
-('Matthew', 'White', 'access789'),
-('Olivia', 'Harris', 'manager123'),
-('Andrew', 'Martin', 'secure789');
+('Poojith', 'Kotipalli', 'admin');
 
 
 SELECT * FROM [Admin];
