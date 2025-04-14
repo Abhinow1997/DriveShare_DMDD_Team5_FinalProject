@@ -8,8 +8,9 @@ from streamlit_folium import st_folium
 from sqlalchemy import text
 from db import engine
 
+# 🔐 RENTER LOGIN
 def renter_login():
-    st.title("🚪 Renter Login")
+    st.title("🔐 Renter Login")
 
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
@@ -18,52 +19,44 @@ def renter_login():
         try:
             with engine.begin() as conn:
                 conn.execute(text("OPEN SYMMETRIC KEY DriveShareSymmetricKey DECRYPTION BY CERTIFICATE DriveShareCert"))
-
                 result = conn.execute(text("""
                     SELECT 
-                        UserID,
-                        CONVERT(VARCHAR(100), DecryptByKey(EmailID)) AS EmailID,
-                        CONVERT(VARCHAR(100), DecryptByKey(Password)) AS PasswordPlain
-                    FROM RegisteredUsers
-                    WHERE Type = 'Renter'
+                        RU.UserID,
+                        R.RenterID,
+                        CONVERT(VARCHAR(100), DecryptByKey(RU.EmailID)) AS EmailID,
+                        CONVERT(VARCHAR(100), DecryptByKey(RU.Password)) AS PasswordPlain
+                    FROM RegisteredUsers RU
+                    JOIN Renter R ON RU.UserID = R.UserID
+                    WHERE RU.Type = 'Renter'
                 """)).fetchall()
 
-            matched_user = next(
-                (row for row in result if row.EmailID == email and row.PasswordPlain == password), None
-            )
+            matched = next((r for r in result if r.EmailID == email and r.PasswordPlain == password), None)
 
-            if matched_user:
-                st.session_state.user_id = matched_user.UserID
+            if matched:
+                st.session_state.renter_id = matched.RenterID
                 st.success("✅ Login successful!")
                 st.rerun()
             else:
                 st.error("❌ Invalid credentials")
-
         except Exception as e:
             st.error(f"❌ Error: {e}")
 
+# 🛠️ RENTER PANEL
 def show():
-    if "user_id" not in st.session_state:
+    if "renter_id" not in st.session_state:
         renter_login()
         st.stop()
 
+    renter_id = st.session_state.renter_id
+    st.title("🚘 Renter Dashboard")
+
+    # Sidebar
     st.sidebar.title("👤 Renter Menu")
     if st.sidebar.button("🔓 Logout"):
-        del st.session_state.user_id
+        del st.session_state.renter_id
         st.success("Logged out successfully.")
         st.rerun()
 
-    user_id = st.session_state.user_id
-
-    # Get RiderID
-    with engine.begin() as conn:
-        renter_id = conn.execute(text("SELECT RenterID FROM Renter WHERE UserID = :uid"), {"uid": user_id}).scalar()
-
-    if not renter_id:
-        st.error("❌ Renter ID not found.")
-        return
-
-    st.title("🚕 Renter Dashboard")
     tab1, tab2 = st.tabs(["Add New Car", "My Cars"])
 
     # ----------------------- TAB 1 - Add New Car ----------------------- #
