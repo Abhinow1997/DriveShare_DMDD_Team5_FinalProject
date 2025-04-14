@@ -1,0 +1,18 @@
+[[pages]]
+path = "pages/admin_panel.py"
+name = "Admin Panel"
+icon = "🛠️"
+
+[[pages]]
+path = "pages/driver_panel.py"
+name = "Driver Panel"
+icon = "🚙"
+
+path = "pages/rider_panel.py"
+name = "Rider Panel"
+icon = "🚕"
+
+
+path = "pages/renter_panel.py"
+name = "Renter Panel"
+icon = "🚗"

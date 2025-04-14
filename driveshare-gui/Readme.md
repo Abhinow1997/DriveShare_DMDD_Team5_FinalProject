@@ -7,9 +7,8 @@ A Streamlit-based dashboard for managing a ride-sharing and car rental platform,
 ## 🔧 Features
 
 - **Admin Panel**: Manage users, view summaries, and add Renter/Driver/Rider accounts.
-- **Driver Panel**: View and accept nearby trip   requests, complete rides, and track earnings.
+- **Driver Panel**: View and accept nearby trip requests, complete rides, and track earnings.
 - **Rider Panel**: Request trips using interactive maps, track ride history and fare estimates.
-- **Renter Panel**: Add cars to rent for drivers if they want it.
 - **Secure**: Encrypted sensitive information in SQL Server using symmetric key encryption.
 - **Interactive Map**: Uses Folium and Streamlit integration to visualize locations.
 
@@ -64,7 +63,3 @@ Update the connection string inside db.py as per your local setup :
 ```
 engine = create_engine("mssql+pyodbc://<SERVER_NAME>/Team2_FinalProject_DMDD?trusted_connection=yes&driver=ODBC+Driver+17+for+SQL+Server")
 ```
-
-
-### 5 ERD Diagram:
-![alt text](DriveShare_Final_ER_diagram.jpg)
