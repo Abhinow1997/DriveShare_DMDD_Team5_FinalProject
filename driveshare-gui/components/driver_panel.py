@@ -74,8 +74,27 @@ def show():
             st.markdown(f"### 👋 Welcome, {driver_info.FirstName} {driver_info.LastName}")
             st.markdown(f"**🆔 Driver ID:** `{driver_info.DriverID}`")
             st.markdown(f"**🟢 Status:** `{driver_info.AvailabilityStatus}`")
-            st.markdown(f"**⭐ Rating:** `{driver_info.Rating}/5`")
             st.markdown(f"**💰 Total Earnings:** `₹{driver_info.TotalEarnings}`")
+
+        st.markdown("### 🔄 Update Availability Status")
+        status_options = ["Available", "In-Transit", "Out-of-Service"]
+        current_status = driver_info.AvailabilityStatus
+
+        new_status = st.selectbox("Change your availability:", status_options, index=status_options.index(current_status))
+
+        if new_status != current_status:
+            if st.button("Update Status"):
+                try:
+                    with engine.begin() as conn:
+                        conn.execute(text("""
+                            UPDATE Driver
+                            SET AvailabilityStatus = :status
+                            WHERE DriverID = :did
+                        """), {"status": new_status, "did": driver_id})
+                    st.success(f"✅ Status updated to `{new_status}`")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Failed to update status: {e}")
 
         st.markdown("---")
         st.subheader("🧾 Your Active Trip")
