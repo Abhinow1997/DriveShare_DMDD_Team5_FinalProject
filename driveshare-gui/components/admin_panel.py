@@ -241,7 +241,6 @@ def show():
                                                 INSERT INTO DriverLocation (DriverID, GeohashID)
                                                 VALUES (:did, :geo)
                                             """), {"did": new_driver.DriverID, "geo": geo})
-                                            st.info(f"📍 Driver location initialized in NY (Geohash: {geo})")
                                         else:
                                             st.warning("⚠️ No available location in NY to assign.")
                                     else:
