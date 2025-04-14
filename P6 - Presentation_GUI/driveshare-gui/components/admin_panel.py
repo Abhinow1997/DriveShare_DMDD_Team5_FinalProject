@@ -3,6 +3,18 @@ import pandas as pd
 from sqlalchemy import text
 from db import engine
 
+
+def reports_viewer():
+    import streamlit as st
+
+    st.title("Invoices Logging 📊")
+
+    st.image("P6 - Presentation_GUI/driveshare-gui/visualization_report/RiderandInvoices.png")
+    st.image("P6 - Presentation_GUI/driveshare-gui/visualization_report/DriverEarningsvsCompletedRides.png")
+    st.markdown("[🔗 Open Full Dashboard](https://public.tableau.com/views/DMDD_Assignment/RiderandInvoices)")
+
+
+
 def show():
     if "admin_logged_in" not in st.session_state:
         st.session_state.admin_logged_in = False
@@ -47,7 +59,7 @@ def show():
             st.rerun()
 
         st.header("📋 Admin Dashboard")
-        tab1, tab2, tab3 = st.tabs(["Registered Users", "Admin Summary", "Add New User"])
+        tab1, tab2, tab3, tab4 = st.tabs(["Registered Users", "Admin Summary", "Add New User", "Reports"])
 
         # TAB 1 - Show Decrypted Registered Users
         with tab1:
@@ -82,6 +94,9 @@ def show():
                     GROUP BY A.AdminID, A.FirstName, A.LastName
                 """), conn)
                 st.dataframe(df_summary)
+
+        with tab4:
+            reports_viewer()
 
         with tab3:
             st.subheader("➕ Add New Registered User")
