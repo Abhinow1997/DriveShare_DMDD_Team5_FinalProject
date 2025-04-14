@@ -84,11 +84,25 @@ def show():
         """), {"did": driver_id}).scalar()
 
         # Find the trip assigned (pickup matches driver's location and is In-Process)
-        assigned_trip = conn.execute(text("""
-            SELECT TripRequestID, PickupLatitude, PickupLongitude, DropoffLatitude, DropoffLongitude, Status
-            FROM TripRequest
-            WHERE PickupGeohashID = :geo AND Status = 'Ride-In-Process'
-        """), {"geo": driver_geo}).fetchone()
+        assigned_trip = None
+        if "active_trip_id" in st.session_state:
+            assigned_trip = conn.execute(text("""
+                SELECT TripRequestID, PickupLatitude, PickupLongitude, DropoffLatitude, DropoffLongitude, Status
+                FROM TripRequest
+                WHERE TripRequestID = :tid AND Status = 'Ride-In-Process'
+            """), {"tid": st.session_state.active_trip_id}).fetchone()
+        else:
+            # fallback in case session not set
+            driver_geo = conn.execute(text("""
+                SELECT GeohashID FROM DriverLocation WHERE DriverID = :did
+            """), {"did": driver_id}).scalar()
+
+            assigned_trip = conn.execute(text("""
+                SELECT TripRequestID, PickupLatitude, PickupLongitude, DropoffLatitude, DropoffLongitude, Status
+                FROM TripRequest
+                WHERE PickupGeohashID = :geo AND Status = 'Ride-In-Process'
+            """), {"geo": driver_geo}).fetchone()
+
 
     if assigned_trip:
         with st.container(border=True):
@@ -141,9 +155,9 @@ def assign_trip_to_driver(trip_id, driver_id):
             SELECT @msg AS message;
         """, (trip_id, driver_id))
 
-        # Advance to the result set containing the OUTPUT
+        # Skip to result set containing OUTPUT
         while cursor.nextset():
-            if cursor.description:  # We've found a result set
+            if cursor.description:
                 break
 
         result = cursor.fetchone()
@@ -152,7 +166,11 @@ def assign_trip_to_driver(trip_id, driver_id):
         raw_conn.close()
 
         if result and result[0]:
+            # 🔥 Save assigned trip to session
+            st.session_state.active_trip_id = trip_id
+
             st.success(f"🚀 {result[0]}")
+            st.rerun()  # Force rerun so it shows immediately in the active section
         else:
             st.warning("✅ Trip assigned, but no message returned.")
 
@@ -183,7 +201,21 @@ def complete_trip(trip_id):
         raw_conn.close()
 
         if result and result[0]:
+            # ✅ Update driver availability status to 'Available'
+            with engine.begin() as conn:
+                driver_id = st.session_state.driver_id
+                conn.execute(text("""
+                    UPDATE Driver
+                    SET AvailabilityStatus = 'Available'
+                    WHERE DriverID = :did
+                """), {"did": driver_id})
+
+                # Optional: Clear active trip session
+                if "active_trip_id" in st.session_state:
+                    del st.session_state.active_trip_id
+
             st.success(f"✅ {result[0]}")
+            st.rerun()  # Refresh the UI
         else:
             st.warning("Trip completed, but no message returned.")
 
