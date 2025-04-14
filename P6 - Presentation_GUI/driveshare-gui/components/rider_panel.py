@@ -292,53 +292,72 @@ def show():
                 else:
                     st.error(trip_id)
 
-        if "latest_trip_id" in st.session_state:
-            trip_id = st.session_state.latest_trip_id
-            with engine.begin() as conn:
-                trip = conn.execute(text("""
-                    SELECT TripRequestID, RequestTime, Status,
-                        PickupLatitude, PickupLongitude,
-                        DropoffLatitude, DropoffLongitude,
-                        EstimatedDistance, EstimatedCost
-                    FROM TripRequest
-                    WHERE TripRequestID = :tid
-                """), {"tid": trip_id}).fetchone()
+            if "latest_trip_id" in st.session_state:
+                trip_id = st.session_state.latest_trip_id
+                with engine.begin() as conn:
+                    trips = conn.execute(text("""
+                        SELECT TR.TripRequestID, TR.RequestTime, TR.Status,
+                            TR.PickupLatitude, TR.PickupLongitude,
+                            TR.DropoffLatitude, TR.DropoffLongitude,
+                            PU.City AS PickupCity, PU.State AS PickupState,
+                            DO.City AS DropoffCity, DO.State AS DropoffState,
+                            TR.EstimatedDistance, TR.EstimatedCost
+                        FROM TripRequest TR
+                        LEFT JOIN Location PU ON PU.GeohashID = TR.PickupGeohashID
+                        LEFT JOIN Location DO ON DO.GeohashID = TR.DropoffGeohashID
+                        WHERE TR.TripRequestID = :tid
+                    """), {"tid": trip_id}).fetchall()
 
-            if trip:
-                st.markdown("## 🎫 Trip Confirmation Ticket")
-                with st.container(border=True):
-                    st.markdown(f"**🆔 Trip ID:** `{trip.TripRequestID}`")
-                    st.markdown(f"**📍 Pickup:** `{trip.PickupLatitude:.5f}, {trip.PickupLongitude:.5f}`")
-                    st.markdown(f"**🏁 Dropoff:** `{trip.DropoffLatitude:.5f}, {trip.DropoffLongitude:.5f}`")
-                    st.markdown(f"**🕒 Requested at:** `{trip.RequestTime}`")
-                    st.markdown(f"**📌 Status:** `{trip.Status}`")
-                    st.markdown(f"**📏 Distance:** `{trip.EstimatedDistance:.2f} km`")
-                    st.markdown(f"**💰 Estimated Cost:** `₹{trip.EstimatedCost:.2f}`")
+                if trips:
+                    for trip in trips:
+                        pickup_display = f"{trip.PickupCity}, {trip.PickupState}" if trip.PickupCity else f"{trip.PickupLatitude:.5f}, {trip.PickupLongitude:.5f}"
+                        dropoff_display = f"{trip.DropoffCity}, {trip.DropoffState}" if trip.DropoffCity else f"{trip.DropoffLatitude:.5f}, {trip.DropoffLongitude:.5f}"
+
+                        st.markdown("## 🎫 Trip Confirmation Ticket")
+                        with st.container(border=True):
+                            st.markdown(f"**🆔 Trip ID:** `{trip.TripRequestID}`")
+                            st.markdown(f"**📍 Pickup:** `{pickup_display}`")
+                            st.markdown(f"**🏁 Dropoff:** `{dropoff_display}`")
+                            st.markdown(f"**🕒 Requested at:** `{trip.RequestTime}`")
+                            st.markdown(f"**📌 Status:** `{trip.Status}`")
+                            st.markdown(f"**📏 Distance:** `{trip.EstimatedDistance:.2f} km`")
+                            st.markdown(f"**💰 Estimated Cost:** `₹{trip.EstimatedCost:.2f}`")
+                else:
+                    st.warning("No trip data found.")
+
+
 
     with tab2:
         st.markdown("### 📚 Your Trip History")
         with engine.begin() as conn:
             trips = conn.execute(text("""
-                SELECT TripRequestID, RequestTime, Status,
-                    PickupLatitude, PickupLongitude,
-                    DropoffLatitude, DropoffLongitude,
-                    EstimatedDistance, EstimatedCost
-                FROM TripRequest
-                WHERE RiderID = :rid
-                ORDER BY RequestTime DESC
+                SELECT TR.TripRequestID, TR.RequestTime, TR.Status,
+                    TR.PickupLatitude, TR.PickupLongitude,
+                    TR.DropoffLatitude, TR.DropoffLongitude,
+                    PU.City AS PickupCity, PU.State AS PickupState,
+                    DO.City AS DropoffCity, DO.State AS DropoffState,
+                    TR.EstimatedDistance, TR.EstimatedCost
+                FROM TripRequest TR
+                LEFT JOIN Location PU ON PU.GeohashID = TR.PickupGeohashID
+                LEFT JOIN Location DO ON DO.GeohashID = TR.DropoffGeohashID
+                WHERE TR.RiderID = :rid
+                ORDER BY TR.RequestTime DESC
             """), {"rid": rider_id}).fetchall()
 
+        st.markdown("## 🎫 Previous Confirmation Tickets")
         if trips:
             for trip in trips:
+                pickup_display = f"{trip.PickupCity}, {trip.PickupState}" if trip.PickupCity else f"{trip.PickupLatitude:.5f}, {trip.PickupLongitude:.5f}"
+                dropoff_display = f"{trip.DropoffCity}, {trip.DropoffState}" if trip.DropoffCity else f"{trip.DropoffLatitude:.5f}, {trip.DropoffLongitude:.5f}"
+
                 with st.container(border=True):
                     st.markdown(f"**🆔 Trip ID:** `{trip.TripRequestID}`")
-                    st.markdown(f"**📍 Pickup:** `{trip.PickupLatitude:.5f}, {trip.PickupLongitude:.5f}`")
-                    st.markdown(f"**🏁 Dropoff:** `{trip.DropoffLatitude:.5f}, {trip.DropoffLongitude:.5f}`")
+                    st.markdown(f"**📍 Pickup:** `{pickup_display}`")
+                    st.markdown(f"**🏁 Dropoff:** `{dropoff_display}`")
                     st.markdown(f"**🕒 Requested at:** `{trip.RequestTime}`")
                     st.markdown(f"**📌 Status:** `{trip.Status}`")
                     st.markdown(f"**📏 Distance:** `{trip.EstimatedDistance:.2f} km`")
                     st.markdown(f"**💰 Estimated Cost:** `₹{trip.EstimatedCost:.2f}`")
-                    st.markdown("---")
         else:
             st.info("🛑 No trips found yet.")
 
