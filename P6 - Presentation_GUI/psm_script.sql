@@ -1,4 +1,4 @@
-USE Team2_FinalProject_DMDD;
+﻿USE Team2_FinalProject_DMDD;
 
 GO
 /**********************STORED PROCEDURE**********************/
@@ -136,45 +136,46 @@ CREATE PROCEDURE dbo.CompleteTrip
     @Message VARCHAR(255) OUTPUT
 AS
 BEGIN
-    -- Declare necessary variables
     DECLARE @RiderID VARCHAR(10);
     DECLARE @EstimatedDistance DECIMAL(18,8);
-    DECLARE @State VARCHAR(50);
     DECLARE @EstimatedCost DECIMAL(18,2);
-    DECLARE @InvoiceID VARCHAR(10);
 
     BEGIN TRY
         BEGIN TRANSACTION;
+
+        -- Fetch trip details
         SELECT 
             @RiderID = RiderID,
             @EstimatedDistance = EstimatedDistance,
-            @State = State,
             @EstimatedCost = EstimatedCost
         FROM TripRequest
         WHERE TripRequestID = @TripRequestID;
 
-        -- Update the trip status to 'Completed'
+        IF @RiderID IS NULL
+        BEGIN
+            SET @Message = 'Trip not found or missing rider.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- Update trip status
         UPDATE TripRequest
         SET Status = 'Completed'
         WHERE TripRequestID = @TripRequestID;
 
+        -- Create Invoice
         INSERT INTO Invoice (TripRequestID, Distance, Price)
         VALUES (@TripRequestID, @EstimatedDistance, @EstimatedCost);
 
-        SET @InvoiceID = (SELECT InvoiceID FROM Invoice WHERE TripRequestID = @TripRequestID);
-
         COMMIT TRANSACTION;
-        SET @Message = 'Trip completed. Invoice ID: ' + @InvoiceID;
+        SET @Message = 'Trip completed. Invoice created.';
     END TRY
     BEGIN CATCH
-        IF @@TRANCOUNT > 0
-        BEGIN
-            ROLLBACK TRANSACTION;
-        END
-        
-        SET @Message = 'Error occurred during the process: ' + ERROR_MESSAGE();
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @Message = 'Error: ' + ERROR_MESSAGE();
     END CATCH;
 END;
+
 
 GO 
 
