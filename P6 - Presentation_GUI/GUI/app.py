@@ -1,5 +1,5 @@
 import streamlit as st
-from pages import admin_panel ,rider_panel, driver_panel
+from components import admin_panel ,rider_panel, driver_panel
 
 st.set_page_config(page_title="DriveShare Admin Portal", layout="wide")
 

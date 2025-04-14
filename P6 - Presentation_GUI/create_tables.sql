@@ -373,7 +373,7 @@ CREATE TABLE [Card] (
   [ExpiryDate] varchar(30) NOT NULL,
   [CVV] varchar(4) NOT NULL,
   [Type] varchar(20),
-  CONSTRAINT [PK_Card] PRIMARY KEY ([PaymentID]),
+  CONSTRAINT [PK_Card] PRIMARY KEY ([CardNumber]),
   CONSTRAINT [FK_Card_PaymentRequest] FOREIGN KEY ([PaymentID]) REFERENCES [PaymentRequest]([PaymentID])
 );
 
@@ -394,5 +394,6 @@ CREATE TABLE DriverStatusAudit (
     DriverID VARCHAR(10) NOT NULL,
     PreviousStatus VARCHAR(15) NOT NULL,
     NewStatus VARCHAR(15) NOT NULL,
-    ChangeDate DATETIME NOT NULL
+    ChangeDate DATETIME NOT NULL,
+    CONSTRAINT [FK_DriverLogging] FOREIGN KEY ([DriverID]) REFERENCES [Driver]([DriverID])
 );
