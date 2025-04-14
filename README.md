@@ -65,6 +65,11 @@ Update the connection string inside db.py as per your local setup :
 engine = create_engine("mssql+pyodbc://<SERVER_NAME>/Team2_FinalProject_DMDD?trusted_connection=yes&driver=ODBC+Driver+17+for+SQL+Server")
 ```
 
+And after the setup is done run the application:
+```
+streamlit run .\driveshare-gui\app.py
+```
+
 
 ### 5 ERD Diagram:
 ![alt text](DriveShare_Final_ER_diagram.jpg)
