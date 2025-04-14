@@ -9,8 +9,8 @@ def reports_viewer():
 
     st.title("Invoices Logging 📊")
 
-    st.image("P6 - Presentation_GUI/driveshare-gui/visualization_report/RiderandInvoices.png")
-    st.image("P6 - Presentation_GUI/driveshare-gui/visualization_report/DriverEarningsvsCompletedRides.png")
+    st.image("C:/Users/Poojith/Documents/Course Work/Sem 2/Data Management and Database Design/Project/New folder/New folder/New folder/DriveShare_DMDD_Team5_FinalProject/P5- PSM Implementation/visualization_report/Rider and Invoices.pdf")
+    st.image("C:/Users/Poojith/Documents/Course Work/Sem 2/Data Management and Database Design/Project/New folder/New folder/New folder/DriveShare_DMDD_Team5_FinalProject/P5- PSM Implementation/visualization_report/Driver Earnings vs Completed Rides.pdf")
     st.markdown("[🔗 Open Full Dashboard](https://public.tableau.com/views/DMDD_Assignment/RiderandInvoices)")
 
 

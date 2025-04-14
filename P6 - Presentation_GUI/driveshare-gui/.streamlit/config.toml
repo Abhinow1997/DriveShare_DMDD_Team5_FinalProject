@@ -1,13 +1,10 @@
-[[pages]]
-path = "pages/admin_panel.py"
-name = "Admin Panel"
-icon = "🛠️"
+[theme]
+primaryColor = "#1f77b4"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#000000"
+font = "sans serif"
 
-[[pages]]
-path = "pages/driver_panel.py"
-name = "Driver Panel"
-icon = "🚙"
-
-path = "pages/rider_panel.py"
-name = "Rider Panel"
-icon = "🚕"
+[server]
+headless = true
+runOnSave = true

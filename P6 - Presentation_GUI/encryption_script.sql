@@ -93,30 +93,9 @@ GO
 ALTER TABLE [RegisteredUsers] ADD CONSTRAINT [UQ_RegisteredUsers_EmailID] UNIQUE ([EmailID]);
 GO
 
--- STEP 7: Encrypt Card Table
-ALTER TABLE [Card]  
-ADD [CardNumber_Encrypted] VARBINARY(256),
-    [CardHolder_Encrypted] VARBINARY(256),
-    [ExpiryDate_Encrypted] VARBINARY(256),
-    [CVV_Encrypted] VARBINARY(256);
-GO
 
-OPEN SYMMETRIC KEY DriveShareSymmetricKey DECRYPTION BY CERTIFICATE DriveShareCert;
-UPDATE [Card]  
-SET 
-  [CardNumber_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), [CardNumber]),
-  [CardHolder_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), [CardHolder]),
-  [ExpiryDate_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), CONVERT(VARCHAR, [ExpiryDate])),
-  [CVV_Encrypted] = EncryptByKey(Key_GUID('DriveShareSymmetricKey'), [CVV]);
-CLOSE SYMMETRIC KEY DriveShareSymmetricKey;
-GO
 
-ALTER TABLE [Card] DROP COLUMN [CardNumber], [CardHolder], [ExpiryDate], [CVV];
-EXEC sp_rename 'Card.CardNumber_Encrypted', 'CardNumber', 'COLUMN';
-EXEC sp_rename 'Card.CardHolder_Encrypted', 'CardHolder', 'COLUMN';
-EXEC sp_rename 'Card.ExpiryDate_Encrypted', 'ExpiryDate', 'COLUMN';
-EXEC sp_rename 'Card.CVV_Encrypted', 'CVV', 'COLUMN';
-GO
+
 
 -- STEP 8: Encrypt OnlineWallet Table
 ALTER TABLE [OnlineWallet]  
@@ -163,20 +142,11 @@ GO
 SELECT 
   UserID,
   CONVERT(VARCHAR(50), DecryptByKey([EmailID])) AS DecryptedEmail,
-  CONVERT(VARCHAR(10), DecryptByKey([PhoneNumber])) AS DecryptedPhone
+  CONVERT(VARCHAR(10), DecryptByKey([PhoneNumber])) AS DecryptedPhone,
+  CONVERT(VARCHAR(40), DecryptByKey([Password])) AS DecryptedPassword
 FROM [RegisteredUsers];
 GO
 
--- View decrypted Card data (FIXED EXPIRYDATE)
-SELECT 
-  PaymentID,
-  CONVERT(VARCHAR(16), DecryptByKey([CardNumber])) AS DecryptedCardNumber,
-  CONVERT(VARCHAR(50), DecryptByKey([CardHolder])) AS DecryptedCardHolder,
-  -- Fix: Convert decrypted string to DATE using style 120 (ODBC canonical format)
-  CONVERT(DATE, CONVERT(VARCHAR(10), DecryptByKey([ExpiryDate])), 120) AS DecryptedExpiryDate,
-  CONVERT(VARCHAR(4), DecryptByKey([CVV])) AS DecryptedCVV
-FROM [Card];
-GO
 
 -- View decrypted OnlineWallet data
 SELECT 
