@@ -145,6 +145,8 @@ BEGIN
 
     BEGIN TRY
         BEGIN TRANSACTION;
+
+        -- 1. Retrieve trip details
         SELECT 
             @RiderID = RiderID,
             @EstimatedDistance = EstimatedDistance,
@@ -153,28 +155,31 @@ BEGIN
         FROM TripRequest
         WHERE TripRequestID = @TripRequestID;
 
-        -- Update the trip status to 'Completed'
+        -- 2. Update trip status to Completed
         UPDATE TripRequest
         SET Status = 'Completed'
         WHERE TripRequestID = @TripRequestID;
 
+        -- 3. Insert Invoice
         INSERT INTO Invoice (TripRequestID, Distance, Price)
         VALUES (@TripRequestID, @EstimatedDistance, @EstimatedCost);
 
+        -- 4. Get the InvoiceID
         SET @InvoiceID = (SELECT InvoiceID FROM Invoice WHERE TripRequestID = @TripRequestID);
 
+        -- 5. Insert corresponding PaymentRequest
+        INSERT INTO PaymentRequest (InvoiceID, RiderID, Status)
+        VALUES (@InvoiceID, @RiderID, 'Pending');
+
         COMMIT TRANSACTION;
-        SET @Message = 'Trip completed. Invoice ID: ' + @InvoiceID;
+        SET @Message = 'Trip completed. Invoice ID: ' + @InvoiceID + ', Payment request created.';
     END TRY
     BEGIN CATCH
-        IF @@TRANCOUNT > 0
-        BEGIN
-            ROLLBACK TRANSACTION;
-        END
-        
-        SET @Message = 'Error occurred during the process: ' + ERROR_MESSAGE();
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @Message = 'Error: ' + ERROR_MESSAGE();
     END CATCH;
 END;
+
 
 GO 
 

@@ -149,130 +149,175 @@ def request_trip(user_id, pickup_lat, pickup_lon, dropoff_lat, dropoff_lon):
     except Exception as e:
         return False, f"❌ Error: {e}"
 
+def process_payment(invoice_id, rider_id, method, amount):
+    try:
+        with engine.begin() as conn:
+            # 1. Insert PaymentRequest if not already exists
+            existing = conn.execute(text("""
+                SELECT COUNT(*) FROM PaymentRequest 
+                WHERE InvoiceID = :iid AND RiderID = :rid
+            """), {"iid": invoice_id, "rid": rider_id}).scalar()
+
+            if existing == 0:
+                conn.execute(text("""
+                    INSERT INTO PaymentRequest (InvoiceID, RiderID, MethodOfPayment, Amount, Status)
+                    VALUES (:iid, :rid, :method, :amount, 'Pending')
+                """), {
+                    "iid": invoice_id,
+                    "rid": rider_id,
+                    "method": method,
+                    "amount": amount
+                })
+
+        # 2. Get the PaymentID
+        with engine.begin() as conn:
+            payment_id = conn.execute(text("""
+                SELECT PaymentID FROM PaymentRequest 
+                WHERE InvoiceID = :iid AND RiderID = :rid
+            """), {"iid": invoice_id, "rid": rider_id}).scalar()
+
+        # 3. Now process the payment
+        raw_conn = engine.raw_connection()
+        cursor = raw_conn.cursor()
+        cursor.execute("""
+            DECLARE @msg VARCHAR(255);
+            EXEC dbo.ProcessPayment @PaymentID = ?, @MethodOfPayment = ?, @Message = @msg OUTPUT;
+            SELECT @msg AS message;
+        """, (payment_id, method))
+
+        while cursor.nextset():
+            if cursor.description:
+                break
+
+        result = cursor.fetchone()
+        cursor.close()
+        raw_conn.commit()
+        raw_conn.close()
+
+        if result and result[0]:
+            st.success(result[0])
+        else:
+            st.warning("✅ Payment processed, but no message returned.")
+        
+        st.rerun()
+
+    except Exception as e:
+        st.error(f"❌ Payment failed: {e}")
 
 
 def show():
-
     if "user_id" not in st.session_state:
         rider_login()
         st.stop()
 
-    rider_id = st.session_state.user_id  
-
-    # ⛔ LOGOUT
     st.sidebar.title("👤 Rider Menu")
     if st.sidebar.button("🔓 Logout"):
-        del st.session_state.user_id  
+        del st.session_state.user_id
         st.success("Logged out successfully.")
         st.rerun()
-    if "user_id" not in st.session_state:
-        rider_login()
-        st.stop()
 
-    st.title("🚕 Rider Panel")
-    st.write("Welcome! Select your pickup and dropoff points below to request a ride.")
+    user_id = st.session_state.user_id
 
-    if "pickup_coords" not in st.session_state:
-        st.session_state.pickup_coords = ""
-    if "dropoff_coords" not in st.session_state:
-        st.session_state.dropoff_coords = ""
-    if "click_stage" not in st.session_state:
-        st.session_state.click_stage = "pickup"
-
-    st.header("🗺️ Select Pickup and Dropoff")
-    m = folium.Map(location=[40.7128, -74.0060], zoom_start=11)
-
-    if st.session_state.pickup_coords:
-        lat, lon = map(float, st.session_state.pickup_coords.split(","))
-        folium.Marker([lat, lon], tooltip="Pickup", icon=folium.Icon(color="green")).add_to(m)
-
-    if st.session_state.dropoff_coords:
-        lat, lon = map(float, st.session_state.dropoff_coords.split(","))
-        folium.Marker([lat, lon], tooltip="Dropoff", icon=folium.Icon(color="red")).add_to(m)
-
-    map_result = st_folium(m, height=500, width=700)
-    time.sleep(0.1)
-
-    if map_result and map_result.get("last_clicked"):
-        latlng = map_result["last_clicked"]
-        coords = f"{latlng['lat']:.6f}, {latlng['lng']:.6f}"
-
-        if st.session_state.click_stage == "pickup":
-            st.session_state.pickup_coords = coords
-            st.session_state.click_stage = "dropoff"
-        elif st.session_state.click_stage == "dropoff":
-            st.session_state.dropoff_coords = coords
-            st.session_state.click_stage = "done"
-        st.rerun()
-
-    st.markdown("## 📌 Selected Coordinates")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.text_input("Pickup Coordinates", value=st.session_state.pickup_coords, disabled=True)
-    with col2:
-        st.text_input("Dropoff Coordinates", value=st.session_state.dropoff_coords, disabled=True)
-
-    st.markdown("---")
-    if st.button("🔄 Reset"):
-        st.session_state.pickup_coords = ""
-        st.session_state.dropoff_coords = ""
-        st.session_state.click_stage = "pickup"
-        st.rerun()
-
-    if st.session_state.pickup_coords and st.session_state.dropoff_coords:
-        if st.button("🚗 Request Trip"):
-            pickup_lat, pickup_lon = map(float, st.session_state.pickup_coords.split(","))
-            dropoff_lat, dropoff_lon = map(float, st.session_state.dropoff_coords.split(","))
-
-            user_id = st.session_state.get("user_id")
-
-            success, trip_id = request_trip(user_id, pickup_lat, pickup_lon, dropoff_lat, dropoff_lon)
-
-            if success:
-                st.session_state.latest_trip_id = trip_id
-                st.session_state.pickup_coords = ""
-                st.session_state.dropoff_coords = ""
-                st.session_state.click_stage = "pickup"
-                st.success("✅ Trip successfully requested!")
-            else:
-                st.error(trip_id)
-
-
-    # 🎫 Show confirmation ticket if available
-    if "latest_trip_id" in st.session_state:
-        trip_id = st.session_state.latest_trip_id
-        with engine.begin() as conn:
-            trip = conn.execute(text("""
-                SELECT TripRequestID, RequestTime, Status,
-                    PickupLatitude, PickupLongitude,
-                    DropoffLatitude, DropoffLongitude,
-                    EstimatedDistance, EstimatedCost
-                FROM TripRequest
-                WHERE TripRequestID = :tid
-            """), {"tid": trip_id}).fetchone()
-
-        if trip:
-            st.markdown("## 🎫 Trip Confirmation Ticket")
-            with st.container(border=True):
-                st.markdown(f"**🆔 Trip ID:** `{trip.TripRequestID}`")
-                st.markdown(f"**📍 Pickup:** `{trip.PickupLatitude:.5f}, {trip.PickupLongitude:.5f}`")
-                st.markdown(f"**🏁 Dropoff:** `{trip.DropoffLatitude:.5f}, {trip.DropoffLongitude:.5f}`")
-                st.markdown(f"**🕒 Requested at:** `{trip.RequestTime}`")
-                st.markdown(f"**📌 Status:** `{trip.Status}`")
-                st.markdown(f"**📏 Distance:** `{trip.EstimatedDistance:.2f} km`")
-                st.markdown(f"**💰 Estimated Cost:** `₹{trip.EstimatedCost:.2f}`")
-        
-        # 🕓 Rider Trip History
-    st.markdown("---")
-    st.markdown("## 📚 Your Trip History")
-
+    # Get RiderID
     with engine.begin() as conn:
-        # Get the actual RiderID using the UserID
-        rider_id = conn.execute(text("""
-            SELECT RiderID FROM Rider WHERE UserID = :uid
-        """), {"uid": st.session_state.user_id}).scalar()
+        rider_id = conn.execute(text("SELECT RiderID FROM Rider WHERE UserID = :uid"), {"uid": user_id}).scalar()
 
-        if rider_id:
+    if not rider_id:
+        st.error("❌ Rider ID not found.")
+        return
+
+    st.title("🚕 Rider Dashboard")
+
+    tab1, tab2, tab3 = st.tabs(["🚗 Request Trip", "📚 Trip History", "💳 Pending Payments"])
+
+    with tab1:
+        st.write("Welcome! Select your pickup and dropoff points below to request a ride.")
+        if "pickup_coords" not in st.session_state:
+            st.session_state.pickup_coords = ""
+        if "dropoff_coords" not in st.session_state:
+            st.session_state.dropoff_coords = ""
+        if "click_stage" not in st.session_state:
+            st.session_state.click_stage = "pickup"
+
+        m = folium.Map(location=[40.7128, -74.0060], zoom_start=11)
+
+        if st.session_state.pickup_coords:
+            lat, lon = map(float, st.session_state.pickup_coords.split(","))
+            folium.Marker([lat, lon], tooltip="Pickup", icon=folium.Icon(color="green")).add_to(m)
+
+        if st.session_state.dropoff_coords:
+            lat, lon = map(float, st.session_state.dropoff_coords.split(","))
+            folium.Marker([lat, lon], tooltip="Dropoff", icon=folium.Icon(color="red")).add_to(m)
+
+        map_result = st_folium(m, height=500, width=700)
+        time.sleep(0.1)
+
+        if map_result and map_result.get("last_clicked"):
+            latlng = map_result["last_clicked"]
+            coords = f"{latlng['lat']:.6f}, {latlng['lng']:.6f}"
+
+            if st.session_state.click_stage == "pickup":
+                st.session_state.pickup_coords = coords
+                st.session_state.click_stage = "dropoff"
+            elif st.session_state.click_stage == "dropoff":
+                st.session_state.dropoff_coords = coords
+                st.session_state.click_stage = "done"
+            st.rerun()
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.text_input("Pickup Coordinates", value=st.session_state.pickup_coords, disabled=True)
+        with col2:
+            st.text_input("Dropoff Coordinates", value=st.session_state.dropoff_coords, disabled=True)
+
+        st.markdown("---")
+        if st.button("🔄 Reset"):
+            st.session_state.pickup_coords = ""
+            st.session_state.dropoff_coords = ""
+            st.session_state.click_stage = "pickup"
+            st.rerun()
+
+        if st.session_state.pickup_coords and st.session_state.dropoff_coords:
+            if st.button("🚗 Request Trip"):
+                pickup_lat, pickup_lon = map(float, st.session_state.pickup_coords.split(","))
+                dropoff_lat, dropoff_lon = map(float, st.session_state.dropoff_coords.split(","))
+                success, trip_id = request_trip(user_id, pickup_lat, pickup_lon, dropoff_lat, dropoff_lon)
+
+                if success:
+                    st.session_state.latest_trip_id = trip_id
+                    st.session_state.pickup_coords = ""
+                    st.session_state.dropoff_coords = ""
+                    st.session_state.click_stage = "pickup"
+                    st.success("✅ Trip successfully requested!")
+                else:
+                    st.error(trip_id)
+
+        if "latest_trip_id" in st.session_state:
+            trip_id = st.session_state.latest_trip_id
+            with engine.begin() as conn:
+                trip = conn.execute(text("""
+                    SELECT TripRequestID, RequestTime, Status,
+                        PickupLatitude, PickupLongitude,
+                        DropoffLatitude, DropoffLongitude,
+                        EstimatedDistance, EstimatedCost
+                    FROM TripRequest
+                    WHERE TripRequestID = :tid
+                """), {"tid": trip_id}).fetchone()
+
+            if trip:
+                st.markdown("## 🎫 Trip Confirmation Ticket")
+                with st.container(border=True):
+                    st.markdown(f"**🆔 Trip ID:** `{trip.TripRequestID}`")
+                    st.markdown(f"**📍 Pickup:** `{trip.PickupLatitude:.5f}, {trip.PickupLongitude:.5f}`")
+                    st.markdown(f"**🏁 Dropoff:** `{trip.DropoffLatitude:.5f}, {trip.DropoffLongitude:.5f}`")
+                    st.markdown(f"**🕒 Requested at:** `{trip.RequestTime}`")
+                    st.markdown(f"**📌 Status:** `{trip.Status}`")
+                    st.markdown(f"**📏 Distance:** `{trip.EstimatedDistance:.2f} km`")
+                    st.markdown(f"**💰 Estimated Cost:** `₹{trip.EstimatedCost:.2f}`")
+
+    with tab2:
+        st.markdown("### 📚 Your Trip History")
+        with engine.begin() as conn:
             trips = conn.execute(text("""
                 SELECT TripRequestID, RequestTime, Status,
                     PickupLatitude, PickupLongitude,
@@ -283,19 +328,52 @@ def show():
                 ORDER BY RequestTime DESC
             """), {"rid": rider_id}).fetchall()
 
-            if trips:
-                for trip in trips:
-                    with st.container(border=True):
-                        st.markdown(f"**🆔 Trip ID:** `{trip.TripRequestID}`")
-                        st.markdown(f"**📍 Pickup:** `{trip.PickupLatitude:.5f}, {trip.PickupLongitude:.5f}`")
-                        st.markdown(f"**🏁 Dropoff:** `{trip.DropoffLatitude:.5f}, {trip.DropoffLongitude:.5f}`")
-                        st.markdown(f"**🕒 Requested at:** `{trip.RequestTime}`")
-                        st.markdown(f"**📌 Status:** `{trip.Status}`")
-                        st.markdown(f"**📏 Distance:** `{trip.EstimatedDistance:.2f} km`")
-                        st.markdown(f"**💰 Estimated Cost:** `₹{trip.EstimatedCost:.2f}`")
-                        st.markdown("---")
-            else:
-                st.info("🛑 No trips found yet.")
+        if trips:
+            for trip in trips:
+                with st.container(border=True):
+                    st.markdown(f"**🆔 Trip ID:** `{trip.TripRequestID}`")
+                    st.markdown(f"**📍 Pickup:** `{trip.PickupLatitude:.5f}, {trip.PickupLongitude:.5f}`")
+                    st.markdown(f"**🏁 Dropoff:** `{trip.DropoffLatitude:.5f}, {trip.DropoffLongitude:.5f}`")
+                    st.markdown(f"**🕒 Requested at:** `{trip.RequestTime}`")
+                    st.markdown(f"**📌 Status:** `{trip.Status}`")
+                    st.markdown(f"**📏 Distance:** `{trip.EstimatedDistance:.2f} km`")
+                    st.markdown(f"**💰 Estimated Cost:** `₹{trip.EstimatedCost:.2f}`")
+                    st.markdown("---")
         else:
-            st.error("❌ Rider ID not found.")
+            st.info("🛑 No trips found yet.")
 
+    with tab3:
+        st.markdown("### 💳 Pending Payments")
+
+        with engine.begin() as conn:
+            unpaid = conn.execute(text("""
+                SELECT 
+                    i.InvoiceID, tr.TripRequestID, i.Price
+                FROM Invoice i
+                JOIN TripRequest tr ON i.TripRequestID = tr.TripRequestID
+                WHERE tr.RiderID = :rid AND tr.Status = 'Completed'
+                AND NOT EXISTS (
+                    SELECT 1 FROM PaymentRequest pr
+                    WHERE pr.InvoiceID = i.InvoiceID AND pr.RiderID = :rid
+                )
+            """), {"rid": rider_id}).fetchall()
+
+        if unpaid:
+            for row in unpaid:
+                with st.container(border=True):
+                    st.markdown(f"**🧾 Invoice ID:** `{row.InvoiceID}`")
+                    st.markdown(f"**🚗 Trip:** `{row.TripRequestID}` | 💰 Amount: ₹{row.Price}")
+                    payment_method = st.selectbox(
+                        f"Choose Payment Method for `{row.InvoiceID}`",
+                        ["Cash", "Card", "OnlineWallet"],
+                        key=f"method_{row.InvoiceID}"
+                    )
+                    if st.button(f"💸 Pay Now for Invoice `{row.InvoiceID}`", key=f"pay_{row.InvoiceID}"):
+                        process_payment(
+                            invoice_id=row.InvoiceID,
+                            rider_id=rider_id,
+                            method=payment_method,
+                            amount=row.Price
+                        )
+        else:
+            st.info("✅ No pending payments.")
